@@ -1,0 +1,216 @@
+@model PizzaShop.DataAccess.ViewModels.OrderDetailViewModel;
+
+<section class="row mx-auto d-flex justify-content-center ">
+    <div class="col-lg-8 ">
+            <div class="d-flex justify-content-between align-items-center mt-3">
+        <span>
+            <h2 class="textBlue">Order Details</h2>
+        </span>
+        <span class="d-flex align-items-center">
+            <button class="btn btn-outline-primary px-4" onclick="location.href='@Url.Action("Index", "Orders")'"
+                type="button">
+                <i class="fa-solid fa-less-than me-2"></i>Back
+            </button>
+        </span>
+    </div>
+
+   <div class="orderDetails">
+     <div class="row bg-white rounded-3 p-3 mt-3 card">
+        <div class="d-flex justify-content-between align-items-center">
+            <span class="d-sm-flex align-items-center">
+                <h4 class="fw-bold">Order Summary </h4> <span class="bg-success-subtle text-success rounded d-sm-flex align-items-center p-1 ms-sm-2 fw-bold">@Model.Status</span>
+            </span>
+            <span class="d-flex align-items-center">
+                <button type="button" class="btn btn-primary w-100 d-flex fs-6 p-2" id="ExportToPdf" data-id="@Model.Id">
+                    <span><i class="fa-solid fa-share-from-square me-md-1"></i></span>
+                    <span class="d-none d-md-block">Export</span>
+                </button>
+            </span>
+        </div>
+        <p class=" text-secondary mb-1">Invoice No: @Model.InvoiceNo</p>
+        <div class="d-md-flex flex-wrap flex-row gap-3 text-secondary">
+            <p class="mb-1">Paid on: @Model.PaidOn</p>
+            <p class="mb-1">Placed on: @Model.PlacedOn</p>
+            <p class="mb-1">Modified on: @Model.ModifierOn</p>
+            <p class="mb-1">Order Duration: </p>
+        </div>
+    </div>
+
+    <div class="row d-block d-md-flex mt-3">
+        <div class="col text-secondary card bg-white rounded-3 mr-md-3 p-3 me-md-1">
+            <h5 class="fw-bold text-black">
+                <i class="fa-solid fa-user me-2"></i>
+                Customer Details
+            </h5>
+            <br>
+            <p class="mb-1">Name: @Model.CustomerName</p>
+            <p class="mb-1">Phone: @Model.Phone</p>
+            <p class="mb-1">No of Person: @Model.NoOfPerson</p>
+            <p class="mb-1">Email: @Model.Email</p>
+        </div>
+        <div class="col text-secondary card bg-white rounded-3 p-3 mt-3 mt-md-0 ms-md-1">
+            <h5 class="fw-bold text-black">
+                <img src="~/images/icons/dinner-table.svg" style="height: 2rem;width:1rem;" alt="">
+                Table Details
+            </h5>
+            <br>
+            <p class="mb-1">Table: 
+                @foreach(var tables in Model.Table)
+                {
+                    <span>@tables ,</span>
+                }
+            </p>
+            <p class="mb-1">Section: @Model.Section</p>
+        </div>
+    </div>
+
+    <section class="row bg-white rounded-3 p-3 mt-3 card">
+        <h5 class="fw-bold"> Order Details</h5>
+        <div class="table-responsive">
+            <table class="table table-hover fs-6 user-table mb-0 order-detail-table">
+                <thead class="fs-6">
+                    <tr>
+                        <th scope="col" class="d-flex align-items-center text-start">Sr.No
+                        </th>
+                        <th scope="col" class="text-start">
+                            <div class="d-flex ">Item
+                            </div>
+                        </th>
+                        <th scope="col" class="text-center">
+                            <div class="d-flex align-items-center justify-content-center">Quantity
+                            </div>
+                        </th>
+                        <th scope="col" class="text-center">Price</th>
+                        <th scope="col" class="">
+                            <div class="d-flex justify-content-end align-items-center">
+                                <span style="width: 120px !important;">Total Amount</span>
+                            </div>
+                        </th>
+                    </tr>
+                </thead>
+
+                <tbody class="table-group-devider fs-6">
+                    @if (@Model.OrderItems.Count() == 0)
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-secondary">No Items Ordered</td>
+                    </tr>
+                }
+                @foreach (var i in @Model.OrderItems)
+                {
+                    <tr class="fw-bold">
+                        <td class="text-start">1</td>
+                        <td class="text-center">
+                            <div class="d-flex flex-column text-center w-100 " style="width: 100px;">
+                                <p class="mb-0 text-start">@i.Name</p>
+                                <ul>
+                                    @foreach(var m in i.Modifiers)
+                                    {
+                                        <li class="text-start">@m.Name</li>
+                                    }
+                                </ul>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <div class="d-flex flex-column">
+                                <p class="mb-0">@i.Quantity</p>
+                                    @foreach(var m in i.Modifiers)
+                                    {
+                                        <p class="mb-0">@m.Quantity</p>
+                                    }
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <div>
+                                <p class="mb-0">@i.Rate</p>
+                                @foreach(var m in i.Modifiers)
+                                    {
+                                        <p>@m.Rate</p>
+                                    }
+                            </div>
+                        </td>
+                        <td class="text-end">
+                            <div class="d-flex flex-column">
+                                <p class="mb-0">@i.TotalAmount</p>
+                                @foreach(var m in i.Modifiers)
+                                    {
+                                        <p>@m.TotalAmount</p>
+                                    }
+                            </div>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="d-flex justify-content-end ">
+            <div class="d-flex flex-column fw-bold font-small">
+                <p class="mb-1 d-flex justify-content-between"><span>SubTotal: </span><span>@Model.SubtotalAmount</span></p>
+                
+                @foreach(var t in @Model.OrderTax)
+                {
+                    <p class="mb-1 d-flex justify-content-between"><span>@t.Name</span>   <span> &#8377 @t.Taxvalue</span></p>
+                }
+                <p class="mb-1 d-flex justify-content-between"> <span>Total :</span><span>&#8377 @Model.TotalAmount</span></p>
+            </div>
+        </div>
+    </section>
+   </div>
+
+    </div>
+</section>
+<div id="invoice-detail-container" class="d-none">
+
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+<script>
+    $("#ExportToPdf").click(function(){
+        var id = $(this).data('id')
+        $.ajax({
+            url: "/Orders/InvoiceDetail",
+            type: "GET",
+            data: {
+                id: id
+            },
+            success: function (response) {
+                $("#invoice-detail-container").html(response);
+                const element = document.querySelector('#invoice-detail');
+                const isMobile = window.innerWidth < 768;
+        
+                const options = {
+                    margin: 1,
+                    filename: `OrderDetails.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { 
+                        scale: isMobile ? 3 : 2,
+                        windowWidth: 800 
+                    },
+                    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+                };
+
+                html2pdf().set(options).from(element).save();
+            },
+            error: function (error) {
+                toastr.error("Error while download excel file");
+            }
+        })
+    })
+    function exportViewOrderPdf() {
+        const element = document.querySelector('.orderDetails');
+
+        const isMobile = window.innerWidth < 768;
+        
+        const options = {
+            margin: 1,
+            filename: 'OrderDetails.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { 
+                scale: isMobile ? 3 : 2,
+                windowWidth: 800 
+            },
+            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+        };
+
+        html2pdf().set(options).from(element).save();
+    }
+</script>

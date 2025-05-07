@@ -1,0 +1,924 @@
+@model PizzaShop.DataAccess.ViewModels.MenuOrderAppViewModel;
+
+<div class="d-flex justify-content-end px-2"><button class="d-xl-none btn btn-outline-secondary showOrderDetail"
+        title="Show Order Detail"><i class="fa-solid fa-bars"></i></button></div>
+<div class="d-flex justify-content-end px-2 mb-2"><button class="d-none btn btn-outline-secondary showMenuItems"
+        title="Show Menu Item"><i class="fa-solid fa-bars"></i></button></div>
+<div class="d-flex">
+    <div class="w-100 overflow-auto" id="menuItemList">
+        <div class="d-flex flex-column flex-md-row justify-content-end align-items-center ">
+            <div class="col-12 col-md-4 d-flex align-items-center gap-2 ">
+                <span><button class="d-lg-none btn btn-outline-secondary ms-2" title="Category"
+                        data-bs-toggle="offcanvas" data-bs-target="#categoryOffcanvas"
+                        aria-controls="offcanvasWithBothOptions"><i class="fa-solid fa-bars"></i></button></span>
+                <div class="form-input-div my-1 me-3 ">
+                    <input type="text" placeholder="Search" class="form-control p-2 shadow-none border-0" name="search"
+                        id="searchOrderItems" autocomplete="off" />
+                    <span class="form-input-icon"><i class="fa-solid fa-search" id="eye-icon" style="color: gray"></i>
+                    </span>
+                </div>
+            </div>
+            <div class="col-12 col-md-8 justify-content-md-end align-items-center gap-2">
+                <div class="d-flex justify-content-center justify-content-md-end align-items-center mx-3">
+                    <span class="status-dot veg mx-2 "></span><span>Vegetarian</span>
+                    <span class="status-dot non-veg mx-2 "></span><span>Non-Vegetarian</span>
+                    <span class="status-dot vegan mx-2 "></span><span>Vegan</span>
+                </div>
+            </div>
+        </div>
+        <section id="menuItemListDiv" class="overflow-auto" style="height: 75vh;">
+            <partial name="_MenuItems" model="Model" />
+        </section>
+    </div>
+
+    @* Order detail *@
+    @if (Model.OrderDetails != null)
+    {
+        <div class="bg-white d-none d-xl-block col-12 col-lg-5 card shadow-sm p-2 overflow-auto "
+            id="menuOrderDetailsPartial">
+            <partial name="_OrderItemDetail" model="Model.OrderDetails" />
+        </div>
+    }
+</div>
+
+<div id="itemModifiersModalDiv">
+
+</div>
+
+<div id="customerDetailDiv">
+    <partial name="_CustomerDetail" />
+</div>
+
+<div class="modal fade" id="QRCodeModal" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticBackdropLabel">Menu</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body d-flex flex-column align-items-center justify-content-center py-5 img-fluid"
+                id="qrcode">
+                <img src="~/images/qr-code.png" style="height: 150px;width: 150px" alt="">
+            </div>
+            <div class="modal-footer d-flex justify-content-center">
+                <button type="button" data-bs-dismiss="modal"
+                    class="btn btn-outline-primary px-3 fw-medium px-4">Done</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* OrderWise Comment *@
+<div class="modal fade" id="OrderWiseCommentModal" tabindex="-1" aria-labelledby="staticBackdropLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered customer-review-modal-width">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-secondary">Order Wise Comments</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mt-3">
+                    <div class="form-floating col-12">
+                        <textarea class="form-control" placeholder="Leave a comment here" id="orderComments"
+                            style="height: 100px"></textarea>
+                        <label for="orderReviewByCustomer" class="ms-2">Comments</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer d-flex justify-content-end">
+                <button type="button" class="btn btn-primary px-3 btn" id="saveOrderComment">Save</button>
+                <button type="button" class="btn btn-outline-primary px-3" data-bs-dismiss="modal">No</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="CustomerRatingModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-3">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reviewModalLabel">Customer Review</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="mb-1 d-flex justify-content-between align-items-center">
+                    <label class="form-label d-block mb-1">Food</label>
+                    <div class="star-rating animated-stars" data-category="food">
+                        <input type="radio" id="food-star5" name="food-rating" value="5">
+                        <label for="food-star5" class="bi bi-star-fill"></label>
+                        <input type="radio" id="food-star4" name="food-rating" value="4">
+                        <label for="food-star4" class="bi bi-star-fill"></label>
+                        <input type="radio" id="food-star3" name="food-rating" value="3">
+                        <label for="food-star3" class="bi bi-star-fill"></label>
+                        <input type="radio" id="food-star2" name="food-rating" value="2">
+                        <label for="food-star2" class="bi bi-star-fill"></label>
+                        <input type="radio" id="food-star1" name="food-rating" value="1">
+                        <label for="food-star1" class="bi bi-star-fill"></label>
+                    </div>
+                </div>
+
+                <div class="mb-1 d-flex justify-content-between align-items-center">
+                    <label class="form-label d-block mb-1">Service</label>
+                    <div class="star-rating animated-stars" data-category="service">
+                        <input type="radio" id="service-star5" name="service-rating" value="5">
+                        <label for="service-star5" class="bi bi-star-fill"></label>
+                        <input type="radio" id="service-star4" name="service-rating" value="4">
+                        <label for="service-star4" class="bi bi-star-fill"></label>
+                        <input type="radio" id="service-star3" name="service-rating" value="3">
+                        <label for="service-star3" class="bi bi-star-fill"></label>
+                        <input type="radio" id="service-star2" name="service-rating" value="2">
+                        <label for="service-star2" class="bi bi-star-fill"></label>
+                        <input type="radio" id="service-star1" name="service-rating" value="1">
+                        <label for="service-star1" class="bi bi-star-fill"></label>
+                    </div>
+                </div>
+                
+                <div class="mb-1 d-flex justify-content-between align-items-center">
+                    <label class="form-label d-block mb-1">Ambience</label>
+                    <div class="star-rating animated-stars" data-category="ambience">
+                        <input type="radio" id="ambience-star5" name="ambience-rating" value="5">
+                        <label for="ambience-star5" class="bi bi-star-fill"></label>
+                        <input type="radio" id="ambience-star4" name="ambience-rating" value="4">
+                        <label for="ambience-star4" class="bi bi-star-fill"></label>
+                        <input type="radio" id="ambience-star3" name="ambience-rating" value="3">
+                        <label for="ambience-star3" class="bi bi-star-fill"></label>
+                        <input type="radio" id="ambience-star2" name="ambience-rating" value="2">
+                        <label for="ambience-star2" class="bi bi-star-fill"></label>
+                        <input type="radio" id="ambience-star1" name="ambience-rating" value="1">
+                        <label for="ambience-star1" class="bi bi-star-fill"></label>
+                    </div>
+                </div>
+
+                <div class="border border-bottom border-warning mb-3"></div>
+                <!-- Comment Box -->
+                <div class="mb-3">
+                    <textarea id="comment" class="form-control" rows="3" placeholder="Comment"></textarea>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="saveCustomerReview">Save</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                    id="cancelReviewBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@* ItemWise Comment *@
+<div class="modal fade" id="ItemWiseCommentModal" tabindex="-1" aria-labelledby="staticBackdropLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered customer-review-modal-width">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-secondary">Special Instruction</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mt-3">
+                    <div class="form-floating col-12">
+                        <textarea class="form-control" placeholder="Instruction" id="itemComments"
+                            style="height: 100px"></textarea>
+                        <label for="orderReviewByCustomer" class="ms-2">Instruction</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer d-flex justify-content-end">
+                <button type="button" class="btn btn-primary px-3 btn" id="saveItemComment">Save</button>
+                <button type="button" class="btn btn-outline-primary px-3" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Complete Confirmation *@
+<div class="modal fade" id="completeOrderModal" tabindex="-1" aria-labelledby="exampleModalLabel">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Complete Confirmation</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="text-center">
+                <i class="fa-solid fa-triangle-exclamation fa-2xl" style="color: #FFD43B;"></i>
+            </div>
+            <div class="modal-body text-center p-1">
+                <p class="fw-bold mb-0">Are you sure you want to complete order?</p>
+            </div>
+            <div class="modal-footer d-flex justify-content-center border-0">
+                <button type="button" class="btn btn-primary" id="confirmCompleteBtn">Yes</button>
+                <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">No</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Cancel Confirmation *@
+<div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="exampleModalLabel">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Delete Confirmation</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="text-center">
+                <i class="fa-solid fa-triangle-exclamation fa-2xl" style="color: #FFD43B;"></i>
+            </div>
+            <div class="modal-body text-center p-1">
+                <p class="fw-bold mb-0">Are you sure you want to cancel order?</p>
+            </div>
+            <div class="modal-footer d-flex justify-content-center border-0">
+                <button type="button" class="btn btn-primary" id="confirmCancelOrderBtn">Yes</button>
+                <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">No</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Invoice Detail *@
+<div id="InvoiceDetailContainer" class="d-none"></div>
+
+
+
+<script>
+    var OrderItems = [];
+    var orderDetails = [];
+    var SelectedItemId;
+    var SelectedItemData;
+    var SubTotal = 0;
+    var Total = 0;
+    var Modifiers = [];
+    var ModalData = [];
+    var Taxes = [];
+    var ExistItemCount;
+    $(document).on("click", ".item-card", function () {
+        SelectedItemId = $(this).data('id');
+        SelectedItemData = $(this).data('data');
+        console.log(SelectedItemData)
+        Modifiers = [];
+        ModalData = [];
+        $.ajax({
+            type: "GET",
+            url: '@Url.Action("GetItemModifier", "MenuOrderApp")',
+            data: { itemId: SelectedItemId },
+            success: function (data) {
+                $('#itemModifiersModalDiv').html(data);
+                $("#HeaderItemName").text(SelectedItemData?.name);
+                $('#modifierModal').modal('show');
+            },
+            error: function (xhr, status, error) {
+                console.error(error);
+            }
+        })
+    })
+
+    $(document).on("click", ".showOrderDetail", function () {
+        $("#menuOrderDetailsPartial").removeClass("d-none");
+        $("#menuItemList").addClass("d-none");
+        $(".showOrderDetail").addClass("d-none");
+        $(".showMenuItems").removeClass("d-none");
+    })
+
+    $(document).on('click',".showMenuItems",function(){
+        $("#menuOrderDetailsPartial").addClass("d-none");
+        $("#menuItemList").removeClass("d-none");
+        $(".showMenuItems").addClass("d-none");
+        $(".showOrderDetail").removeClass("d-none");
+    })
+
+    $(document).on("click", ".modifier-card", function () {
+        var max = $(this).data('max');
+        var min = $(this).data('min');
+        var mgId = $(this).data('mgid');
+
+        var count = Modifiers.filter(mod => mod.modifierGroupId === mgId).length;
+        var data = $(this).data('data');
+        @* var modifier = {
+            Id: data.id,
+            Name: data.name,
+            Rate: data.rate,
+            Quantity: data.quantity,
+            Description: data.description,
+            Modifiergroupid: data.modifiergroupid,
+            Unitid: data.unitid,
+        }; *@
+        
+        var modifier = {
+            id: null,
+            orderItemId: SelectedItemData.id,
+            name: data.name,
+            rate: data.rate,
+            quantity: data.quantity,
+            totalAmount: data.rate,
+            modifierId: data.id,
+            modifierGroupId: mgId
+        }
+        console.log(modifier);
+
+        if (Modifiers.some(mod => mod.modifierId === modifier.modifierId)) {
+            Modifiers = Modifiers.filter(mod => mod.modifierId !== modifier.modifierId);
+            $(this).removeClass("selected");
+        } else {
+            if (count >= max) {
+                toastr.warning("You can select only " + max + " options");
+                return;
+            };
+            Modifiers.push(modifier);
+            $(this).addClass("selected");
+        }
+    })
+
+    $(document).on("click", "#AddModifiers", async function () {
+        var flag = 1;
+        var ModifiersTotal = 0;
+        var ItemTotal = parseFloat(SelectedItemData.rate) * 1;
+
+        var ExistItem = OrderItems.find(item => item.menuItemId === SelectedItemId);
+        if (ExistItem) {
+            var newModifiersCount = Modifiers.length;
+            var oldModifiersCount = ExistItem.modifiers.length;
+            console.log(newModifiersCount, oldModifiersCount);
+            if (oldModifiersCount == newModifiersCount) {
+                var count = 0;
+                Modifiers.forEach(mod => {
+                    var existModifier = ExistItem.modifiers.find(m => m.modifierId === mod.modifierId);
+                    if (existModifier) {
+                        count++;
+                    }
+                })
+                console.log(count);
+                if (count == newModifiersCount) {
+                    toastr.warning("Same Item already exist in order");
+                    return;
+                }
+            }
+        }
+
+        await ModalData.forEach(d => {
+            var mgId = d.modifierGroupId;
+            var max = d.maxselectionrequired;
+            var min = d.minselectionrequired;
+            var count = Modifiers.filter(m => m.modifierGroupId === mgId).length;
+            console.log(count, min, max);
+            if (count > max) {
+                toastr.warning("You can select only " + max + " options");
+                flag = 0;
+                return;
+            }
+            if (count < min) {
+                toastr.warning("You must select at least " + min + " option from " + d.name);
+                flag = 0;
+                return;
+            }
+        })
+        Modifiers.forEach(mod => {
+            ModifiersTotal += parseInt(mod.rate);
+        })
+
+        var newItem = {
+            id: null,
+            name: SelectedItemData.name,
+            rate: SelectedItemData.rate,
+            quantity: 1, //quantity get from input
+            amount: ItemTotal.toFixed(2),
+            totalModifierAmount: ModifiersTotal,
+            totalAmount: ItemTotal + ModifiersTotal,
+            tax: SelectedItemData.tax, //pending
+            orderId: orderDetails.id,
+            comment: SelectedItemData.comment,
+            menuItemId: SelectedItemData.id,
+            instruction: "", //pending
+        }
+        newItem.modifiers = Modifiers;
+        console.log(newItem);
+
+
+        SelectedItemData.modifiers = Modifiers;
+        console.log(SelectedItemData);
+        if (flag == 1) {
+            @* SubTotal += ModifiersTotal; *@
+                SubTotal += newItem.totalAmount;
+            SubTotal = parseFloat(SubTotal, 2);
+            $("#subTotal").text(SubTotal);
+
+            @* updateTaxValues(); *@
+            updateTaxes()
+
+            var sortedModifierIds = Modifiers.map(mod => mod.modifierId).sort().join('');
+            var uniqueId = 0 - (newItem.menuItemId + sortedModifierIds);
+            newItem.id = parseInt(uniqueId);
+
+            OrderItems.push(newItem);
+            console.log(OrderItems);
+
+            $("#OrderItemListContainer").append(
+                `
+            <div
+      class="d-flex justify-content-between align-items-center shadow-sm rounded-2 border border-2 p-2 my-2 order-item-card">
+      <div class="text-start col-5">
+        <div class="accordion accordion-flush shadow-none" id="accordionFlushExample">
+          <div class="accordion-item">
+            <h2 class="accordion-header itemDetail" id="flush-headingOne">
+              <button class="accordion-button collapsed fw-bold p-0" type="button" data-bs-toggle="collapse"
+                data-bs-target="#${newItem.id}" aria-expanded="false" aria-controls="${newItem.id}">
+                ${newItem.name}
+              </button>
+
+            </h2>
+            <div id="${newItem.id}" class="accordion-collapse collapse" aria-labelledby="flush-headingOne"
+              data-bs-parent="#accordionFlushExample">
+              <div class="accordion-body p-0">
+                <ul class="mb-0">
+                  ${Modifiers.map(mod => `<li>${mod.name}</li>`).join('')}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-4 text-center">
+        <div class="">
+          <div class="col-12 d-flex justify-content-start">
+            <div class="quantity">
+              <button class="minus" aria-label="Decrease" data-id="null">&minus;</button>
+              <input type="number" class="input-box" value="${newItem.quantity}" min="1" data-id="${newItem.menuItemId}" />
+              <button class="plus" aria-label="Increase">&plus;</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-3 text-left d-flex justify-content-between">
+
+        <div class="d-flex justify-content-start align-items-center">
+          <div class="d-flex flex-column text-black">
+            <span class="fw-medium fs-5 item-rate" value="${newItem.rate}" data-id="${newItem.menuItemId}">₹${newItem.amount}</span>
+            <span class="modifier-rate" style="font-size: smaller;" value="${ModifiersTotal}">₹
+              ${newItem.totalModifierAmount}</span>
+          </div>
+        </div>
+
+        <div class="">
+          <button class="btn border-0 delete-order-item" data-id="${newItem.id}" data-uniqid="${newItem.id}">
+            <i class="fa-regular fa-trash-can"></i>
+          </button>
+        </div>
+      </div>
+    </div>    
+            `)
+
+            $("#modifierModal").modal('hide');
+            Modifiers = [];
+            SelectedItemId = null;
+            SelectedItemData = null;
+        } else {
+            return;
+        }
+
+    })
+
+    $(document).on('click', '.plus', function (e) {
+        var value = parseInt($(this).parent().find(".input-box").val());
+        var increased = value + 1
+        $(this).parent().find(".input-box").val(increased);
+        $(this).parent().find(".minus").attr("disabled", false);
+        CalculateItemRates();
+    })
+
+    $(document).on('click', '.minus', async function () {
+        var value = parseInt($(this).parent().find(".input-box").val());
+        var decreased = value - 1;
+        var itemId = $(this).data('id');
+        if (itemId != null) {
+            console.log(itemId);
+            var canReduce = await canReduceItemQuantity(itemId, decreased)
+            if (!canReduce) {
+                return;
+            }
+        }
+        $(this).parent().find(".input-box").val(decreased);
+        CalculateItemRates();
+        if (decreased < 2) {
+            $(this).parent().find(".minus").attr("disabled", true);
+            $(this).parent().find(".input-box").val(1);
+            return;
+        }
+    })
+
+    $(document).on('click', ".delete-order-item", function () {
+        var itemId = $(this).data('id');
+        var uniqueId = $(this).data('uniqid');
+        console.log(itemId, uniqueId);
+        var itemDiv = $(this).closest(".order-item-card");
+        if (uniqueId != null) {
+            OrderItems = OrderItems.filter(item => item.id !== uniqueId);
+            var item = OrderItems.find(item => item.id === uniqueId);
+            itemDiv.remove();
+            CalculateItemRates();
+        }
+        else {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("CheckIsItemReady", "MenuOrderApp")',
+                data: { id: itemId },
+                success: function (response) {
+                    if (response.success) {
+                        toastr.error(response.message);
+                    } else {
+                        OrderItems = OrderItems.filter(item => item.id !== itemId);
+                        itemDiv.remove();
+                        CalculateItemRates();
+                    }
+                },
+                error: function (xhr, status, error) {
+                    toastr.error(error.message);
+                }
+            })
+        }
+        console.log(itemId);
+
+    })
+
+    async function canReduceItemQuantity(itemId, quantity) {
+        var result;
+        await $.ajax({
+            type: "POST",
+            url: '@Url.Action("CanReduceItemQuantity", "MenuOrderApp")',
+            data: { id: itemId, quantity: quantity },
+            success: function (response) {
+                if (response.success) {
+                    result = response.success
+                } else {
+                    toastr.error(response.message);
+                    result = response.success
+                }
+            },
+            error: function (xhr, status, error) {
+                toastr.error(error.message);
+            }
+        })
+        console.log("result", result)
+        return result;
+    }
+
+    function CalculateItemRates() {
+        SubTotal = 0;
+        Total = 0;
+        $(".item-rate").each(function (i) {
+            var itemId = $(this).data('id');
+            var itemRate = $(this).attr("value");
+            var modifierRate = $(this).parent().find(".modifier-rate").attr("value");
+            var quantity = $(this).closest(".order-item-card").find(".input-box").val();
+
+            console.log(itemRate, modifierRate, quantity);
+            var total = parseFloat(itemRate * quantity).toFixed(2);
+            var modifierTotal = parseFloat(modifierRate * quantity).toFixed(2);
+            console.log("All Total", total, modifierTotal);
+
+            $(this).text("₹" + total);
+            $(this).parent().find(".modifier-rate").text("₹" + modifierTotal);
+
+            var item = OrderItems.find(item => item.menuItemId === itemId);
+            OrderItems = OrderItems.map(item => {
+                if (item.menuitemid === itemId) {
+                    return {
+                        ...item,
+                        quantity: quantity,
+                        amount: total,
+                        totalModifierAmount: modifierTotal,
+                        totalAmount: parseFloat(total) + parseFloat(modifierTotal)
+                    }
+                }
+                return item;
+            })
+
+            console.log("order Ites", OrderItems);
+
+            SubTotal = parseFloat(SubTotal) + parseFloat(total) + parseFloat(modifierTotal);
+            console.log("SubTotal", SubTotal);
+            $("#subTotal").text(SubTotal);
+            @* updateTaxValues(); *@
+            updateTaxes();
+        })
+    }
+
+
+    $(document).on('click', '.favourite-btn', function (e) {
+        e.stopPropagation();
+        var itemId = $(this).data('id');
+        var isFavorite = $(this).hasClass('fa-regular');
+        var icon = isFavorite ? 'fa-solid' : 'fa-regular';
+
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("MarkAsFavourite", "MenuOrderApp")',
+            data: { itemId: itemId },
+            success: async function (response) {
+                if (response.success) {
+                    await GetMenuItems();
+                    toastr.message(response.message);
+                } else {
+                    toastr.error(response.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error(error);
+            }
+        });
+    })
+
+    function updateTaxValues() {
+        var TotalTax = 0;
+        Taxes.forEach(tax => {
+            if (tax.name == "SGST") {
+                var taxAmount = tax.type == "Percentage" ? (SubTotal * tax.taxAmount) / 100 : tax.taxAmount;
+                if ($("#isSGSTInput").is(':checked')) {
+                    TotalTax += taxAmount;
+                    $(".order-tax-sgst").text("₹ " + taxAmount);
+                    orderDetails.isSGSTSeclected = true;
+                }
+                else {
+                    TotalTax -= taxAmount;
+                    orderDetails.isSGSTSeclected = false;
+                    $(".order-tax-sgst").text("");
+                }
+
+                return;
+            } else {
+                var taxAmount = tax.type == "Percentage" ? (SubTotal * tax.taxAmount) / 100 : tax.taxAmount;
+                taxAmount = taxAmount.toFixed(2);
+                taxAmount = parseFloat(taxAmount);
+                TotalTax += taxAmount;
+                $(".order-tax-" + tax.id).text("₹ " + taxAmount);
+                tax.taxvalue = taxAmount;
+            }
+
+        })
+        Total = parseFloat(SubTotal) + parseFloat(TotalTax);
+        Total = Total.toFixed(2);
+        $("#total").text("₹ " + Total);
+    }
+
+
+    function updateTaxes()
+    {
+        var TotalTax = 0;
+        Taxes.forEach(tax => {
+            if(tax.isDefault == true && tax.isActive == true)
+            {
+                var taxAmount = tax.type == "Percentage" ? (SubTotal * tax.taxAmount) / 100 : tax.taxAmount;
+                @* taxAmount = taxAmount.; *@
+                taxAmount = parseFloat(taxAmount).toFixed(2);
+                TotalTax = parseFloat(TotalTax) + parseFloat(taxAmount);
+                $(".order-tax-" + tax.id).text("₹ " + taxAmount);
+                tax.taxvalue = taxAmount;
+            }else{
+                console.log("checkbox value" ,$(".order-tax-checkbox-" + tax.id).is(":checked"))
+                if($(".order-tax-checkbox-" + tax.id).is(":checked")){
+                    var taxAmount = tax.type == "Percentage" ? (SubTotal * tax.taxAmount) / 100 : tax.taxAmount;
+                    taxAmount = taxAmount.toFixed(2)
+                    TotalTax = parseFloat(TotalTax) + parseFloat(taxAmount);
+                    $(".order-tax-" + tax.id).text("₹ " + taxAmount);
+                    tax.taxvalue = taxAmount;
+                }else{
+                    $(".order-tax-" + tax.id).text("₹ " + 0);
+                    tax.taxvalue = 0.00;
+                }
+            }
+        })
+        console.log("Updated Tax" , Taxes)
+        Total = parseFloat(SubTotal) + parseFloat(TotalTax);
+        Total = Total.toFixed(2);
+        $("#total").text("₹ " + Total);
+    }
+
+    $(document).on('change',".tax-checkbox",function(){
+        updateTaxes();
+    })
+
+    $(document).on("click", "#SaveOrder", function () {
+        if(OrderItems.length == 0)
+        {
+            toastr.error("Please add items in order");
+            return;
+
+        }
+        var order = {
+            Id: orderDetails.id,
+            Status: orderDetails.status,
+            CustomerName: orderDetails.customerName,
+            Phone: orderDetails.phone,
+            InvoiceNo: orderDetails.invoiceNo,
+            NoOfPerson: orderDetails.noOfPerson,
+            IsSGSTSeclected: orderDetails.isSGSTSeclected,
+            Section: orderDetails.section,
+            SubtotalAmount: SubTotal,
+            TotalAmount: Total,
+            OrderItems: OrderItems,
+            OrderTax: Taxes,
+            Table: orderDetails.table,
+        }
+        console.log(order);
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("SaveOrder", "MenuOrderApp")',
+            data: { order: order },
+            success: function (response) {
+                if (response.success) {
+                    toastr.success(response.message);
+                    GetOrderDetails();
+                } else {
+                    toastr.error(response.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error(error);
+            }
+        });
+    })
+
+    function GetOrderDetails() {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Action("GetOrderDetails", "MenuOrderApp")',
+            data: { id: orderDetails.id },
+            success: function (response) {
+                if (response.success == "false") {
+                    toastr.error()
+                } else {
+
+                    $("#menuOrderDetailsPartial").html(response);
+                }
+            },
+        })
+    }
+
+    $(document).on("change", "#isSGSTInput", function () {
+        @* updateTaxValues(); *@
+        updateTaxes()
+    })
+
+    $(document).on("click", "#orderComment", function () {
+        console.log(orderDetails);
+        $("#orderComments").val(orderDetails.comments);
+        $("#OrderWiseCommentModal").modal('show');
+    })
+
+    $(document).on('click', "#QRCode", function () {
+        $("#QRCodeModal").modal('show');
+    })
+
+    $(document).on("click", "#saveOrderComment", function () {
+        var comment = $("#orderComments").val();
+        if (comment == "") {
+            toastr.warning("Please enter comment");
+            return;
+        }
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("SaveOrderComment", "MenuOrderApp")',
+            data: { id: orderDetails.id, comment: comment },
+            success: async function (response) {
+                if (response.success) {
+                    toastr.success(response.message);
+                    $("#OrderWiseCommentModal").modal('hide');
+                    await GetOrderDetails()
+                    console.log(orderDetails)
+                } else {
+                    toastr.error(response.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                toastr.error(error.message);
+            }
+        });
+    })
+
+    $(document).on('click', "#customer-detail", function () {
+        $("#customerNoOfPerson").val(orderDetails.noOfPerson)
+        $("#customerPhone").val(orderDetails.phone)
+        $("#customerName").val(orderDetails.customerName)
+        $("#customerEmail").val(orderDetails.email)
+
+        $("#customerDetailsModal").modal('show');
+    })
+
+    var orderItemId;
+    $(document).on('dblclick', ".item-comment", function () {
+        orderItemId = $(this).data('id');
+        console.log(orderItemId);
+        var item = OrderItems.find(i => i.id == orderItemId);
+        $("#itemComments").val(item.comment)
+        $("#ItemWiseCommentModal").modal('show');
+    })
+
+    $(document).on('click', "#saveItemComment", function () {
+        var comment = $("#itemComments").val()
+
+        if (comment == "") {
+            toastr.warning("Please write comment");
+            return;
+        }
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("SaveOrderItemComment", "MenuOrderApp")',
+            data: { id: orderItemId, comment: comment },
+            success: async function (response) {
+                if (response.success) {
+                    toastr.success(response.message);
+                    $("#ItemWiseCommentModal").modal('hide');
+                    await GetOrderDetails()
+                    console.log(orderDetails)
+                } else {
+                    toastr.error(response.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                toastr.error(error.message);
+            }
+        });
+    })
+
+    $(document).on("click", "#saveCustomerReview", function () {
+        const ratings = {};
+
+        ['food', 'service', 'ambience'].forEach(function (category) {
+            const selected = $(`input[name="${category}-rating"]:checked`).val();
+            ratings[category] = selected ? selected : null;
+        });
+        const comment = $('#comment').val();
+        console.log(ratings.food, ratings.ambience, ratings.service, comment);
+
+        $.ajax({
+            url: '@Url.Action("SaveCustomerFeedBack", "MenuOrderApp")',
+            type: 'POST',
+            data: {
+                orderId: orderDetails.id,
+                food: ratings.food,
+                service: ratings.service,
+                ambience: ratings.ambience,
+                comment: comment
+            },
+            success: function (response) {
+                toastr.success(response.message);
+                $("#CustomerRatingModal").modal('hide');
+                window.location.href = "/TableOrderApp/Index";
+            },
+            error: function (error) {
+
+            }
+        })
+    })
+
+    $(document).on("click", "#cancelReviewBtn", function () {
+        window.location.href = "/TableOrderApp/Index";
+    })
+
+    function showFullScreen() {
+        let w = window.outerWidth;
+        let h = window.outerHeight;
+        if (w > 991) {
+            $("#menuItemList").removeClass("d-none");
+        }
+    }
+    window.addEventListener('resize', showFullScreen);
+
+    $(document).on("click", "#generateInvoice", function () {
+        var id = $(this).data('id')
+        $.ajax({
+            url: "/Orders/InvoiceDetail",
+            type: "GET",
+            data: {
+                id: orderDetails.id
+            },
+            success: function (response) {
+                $("#InvoiceDetailContainer").html(response);
+                const element = document.querySelector('#invoice-detail');
+                console.log(element);
+                const isMobile = window.innerWidth < 768;
+
+                const options = {
+                    margin: 1,
+                    filename: 'OrderDetails.pdf',
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: {
+                        scale: isMobile ? 3 : 2,
+                        windowWidth: 800
+                    },
+                    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+                };
+
+                html2pdf().set(options).from(element).save();
+            },
+            error: function (error) {
+                toastr.error("Error while download pdf file");
+            }
+        })
+    })
+</script>

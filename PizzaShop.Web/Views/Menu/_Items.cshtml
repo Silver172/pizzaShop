@@ -1,0 +1,104 @@
+@model PizzaShop.DataAccess.ViewModels.ItemTabViewModel;
+@inject IHttpContextAccessor Accessor;
+@using Newtonsoft.Json;
+@using PizzaShop.ViewModels;
+@{
+    var PageSize = Model.PageSize;
+    var PageIndex = Model.PageIndex;
+    var TotalPage = Model.TotalPage;
+    var SearchString = Model.SearchString;
+    var permission = JsonConvert.DeserializeObject<List<ManageRolePermissioinViewModel>>(Accessor.HttpContext.Session.GetString("permission"));
+}
+<partial name="_ValidationScriptsPartial" />
+
+<section>
+    <div class="row mx-0">
+        <aside class="col-md-3" style="background-color: #f5f5f5">
+            <!-- Category header -->
+            <div class="d-flex flex-wrap justify-content-between align-items-center p-2">
+                <h5 class="textBlue">Categories</h5>
+                <button class="btn btn-outline-primary  d-@(permission[2].Canaddedit == false ? "none" : "")" id="Addcategory">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+            </div>
+            <!-- Category list -->
+            <div class="category-list">
+                @Html.Partial("_ListCategories", Model.ListCategories)
+            </div>
+        </aside>
+        <div class="col-12 col-md-9 border-start border-primary bg-white">
+            <div>
+                <h5 class="p-2 mb-0 text-primary textBlue">Items</h5>
+                <div class="d-md-flex justify-content-center justify-content-md-end align-items-center my-3">
+                    <div class="d-flex justify-content-center align-items-center">
+                        <div class="form-input-div my-3 me-3">
+                            <input type="text" placeholder="Search" class="form-control p-2" name="search"
+                                id="searchString" minlength="5" required id="searchItem" />
+                            <span class="form-input-icon"><i class="fa-solid fa-search" id="eye-icon"
+                                    style="color: gray"></i>
+                            </span>
+                        </div>
+                        <div>
+                            <button class="btn btn-outline-secondary me-3  d-@(permission[2].Candelete == false ? "none" : "")" id="MultipleDeleteItem">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-center align-items-center mt-2 mt-md-0  d-@(permission[2].Canaddedit == false ? "none" : "")">
+                        <button class="btn btn-primary me-3" id="AddMenuItemBtn">
+                            <i class="fa-solid fa-plus"></i> New Item
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div id="menuItems">
+                @Html.Partial("_ListItems", Model)
+            </div>
+        </div>
+</section>
+
+<div id="addEditCategoryContainer"></div>
+
+
+
+
+<script>
+    $(document).ready(function () {
+        $('.deleteCategory').click(function () {
+            var categoryId = $(this).data("id");
+            $("#DeleteCategoryId").val(categoryId);
+            $("#deleteCategoryModal").modal('show');
+        })
+
+        $('#AddMenuItemBtn').click(function () {
+            $.ajax({
+                url: '/Menu/AddMenuItem',
+                type: 'GET',
+                success: function (response) {
+                    $("#addItemContainer").html(response);
+                    $("#AddItemModel").modal('show');
+                    $("#MenuItemCategory").val(categoryId);
+                },
+                error: function (error) {
+                    toastr.error(error.message);
+                }
+            })
+        })
+
+        $("#Addcategory").click(function () {
+            $.ajax({
+                url: '/Menu/AddEditCategory',
+                type: 'GET',
+                data: { id: null },
+                success: function (response) {
+                    $("#addEditCategoryContainer").html(response);
+                    $("#addCategoryModal").modal('show');
+                }
+            })
+
+        })
+    })
+
+
+</script>

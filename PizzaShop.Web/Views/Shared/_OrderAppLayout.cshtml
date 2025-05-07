@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+@inject IHttpContextAccessor Accessor;
+@using Newtonsoft.Json;
+@using PizzaShop.ViewModels;
+@using System.Security.Claims
+@{
+  var permission =
+  JsonConvert.DeserializeObject<List<ManageRolePermissioinViewModel>>(Accessor.HttpContext.Session.GetString("permission"));
+  var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+  var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+}
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>@ViewData["Title"] - PizzaShop</title>
+  <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+  <link rel="stylesheet" href="~/PizzaShop.Web.styles.css" asp-append-version="true" />
+  <link rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  @* Data Table *@
+  <link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.css">
+  <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+  <script src="https://cdn.datatables.net/2.2.2/js/dataTables.js"></script>
+  <!-- Toastr CSS, jQuery , JS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+  @* frontend side validation script*@
+  <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+  <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+</head>
+
+<body>
+  <div class="container-fluid">
+    <div class="row main-container">
+
+      <div class="main-section p-0 content-bg">
+        <!-- navbar -->
+        <nav class="navbar navbar-expanded-lg justify-content-end align-items-center navbar-light fixed-top"
+          style="position:static;">
+          <span class="menuIcon">
+            @* <img src="~/images/icons/menu-bar.svg" alt="toggle-btn" class="mx-2 ms-3 text-white" id="sidebarMenu"
+              data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="offcanvasWithBothOptions" /> *@
+          </span>
+          <div>
+            <div class="d-flex gap-2 justify-content-center align-items-center text-white">
+              <div class="order-app-nav-icons @(currentController == "KOTOrderApp" ? "order-nav-active" : "")"
+                onclick="location.href='@Url.Action("Index", "KOTOrderApp")'" title="KOT">
+                <img src="~/images/icons/kot-icon.svg" alt="menu-icon" class="me-md-2"> <span
+                  class="d-none d-md-block ">KOT</span>
+              </div>
+              <div class="order-app-nav-icons @(currentController == "WaitingListOrderApp" ? "order-nav-active" : "") d-@(role == "Chef" ? "none" : "")"
+                title="Waiting List" onclick="location.href='@Url.Action("Index", "WaitingListOrderApp")'"><i
+                  class="fa-solid fa-clock me-md-2"></i> <span class="d-none d-md-block">Waiting List</span></div>
+              <div class="order-app-nav-icons @(currentController == "TableOrderApp" ? "order-nav-active" : "") d-@(role == "Chef" ? "none" : "")"
+                title="Tables" onclick="location.href='@Url.Action("Index", "TableOrderApp")'"><i
+                  class="fa-solid fa-square me-md-2 "></i> <span class="d-none d-md-block">Tables</span></div>
+              <div class="order-app-nav-icons @(currentController == "MenuOrderApp" ? "order-nav-active" : "") d-@(role == "Chef" ? "none" : "")" title="Menu" onclick="location.href='@Url.Action("Index", "MenuOrderApp")'"><img src="~/images/icons/order-app-menu-icon.svg"
+                  alt="menu-icon" class="me-md-2"> <span class="d-none d-md-block ">Menu</span>
+              </div>
+              <div class="btn-group me-3">
+                <div class="btn-group dropstart">
+                  <img src="~/images/Default_pfp.svg.png" alt="toggle-btn" aria-hidden="true" data-bs-toggle="dropdown"
+                    class="profile-photo" />
+
+                  <ul class="dropdown-menu py-0">
+                    <li>
+
+                      <div class="d-flex m-2 align-items-center">
+                        <img src="~/images/Default_pfp.svg.png" alt="toggle-btn" class="profile-photo" />
+                        <p id="userName" class="m-0 ms-2"></p>
+                      </div>
+
+                    </li>
+                    <li>
+                      <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item" href="/Profile/Profile?OrderApp=true"><i class="fa fa-user-circle me-2"
+                          aria-hidden="true"></i>My Profile</a></li>
+                    <li><a class="dropdown-item" href="/Profile/ChangePassword?OrderApp=true"><i class="fa fa-refresh me-2"
+                          aria-hidden="true"></i>Change Password</a></li>
+                    <li class="d-@(role == "Chef" ? "none" : "")"><a class="dropdown-item" href="/Dashboard/Dashboard"><i class="fa fa-home me-2"
+                          aria-hidden="true"></i>Dashboard</a></li>
+                    <li data-bs-toggle="modal" data-bs-target="#LogoutModel" style="cursor: pointer;"><a
+                        class="dropdown-item"><i class="fa fa-sign-out me-2" aria-hidden="true"></i>Logout</a></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </nav>
+
+        <!-- Logout Modal -->
+        <div class="modal fade" id="LogoutModel" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-body text-center p-1">
+                <img src="~/images/toppng.com-warning-icon-2400x2400.png" alt="alert-icon" height="35px" width="35px" />
+                <p class="fw-bold mb-0">
+                  Are you sure you want to Logout?
+                </p>
+              </div>
+              <div class="modal-footer d-flex justify-content-center border-0">
+
+                <a class="btn btn-primary" href="@Url.Action("Logout", "Authentication")">Yes</a>
+                <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">
+                  No
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- main content -->
+        <div class="px-2 px-md-4 content-bg">
+          <main role="main" class="">
+            @RenderBody()
+          </main>
+        </div>
+
+
+      </div>
+    </div>
+  </div>
+  <script src="~/lib/jquery/dist/jquery.min.js"></script>
+  <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="~/js/site.js" asp-append-version="true"></script>
+  @await RenderSectionAsync("Scripts", required: false)
+  <script type="text/javascript"
+    src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+
+  <script>
+    $(document).click(function () {
+      if ($.cookie('AuthToken') == null)
+        window.location.reload();
+    })
+  </script>
+
+  <script>
+    var debounceTimer;
+    $(document).ready(function () {
+      $.ajax({
+        url: '/Profile/GetUserProfile',
+        method: 'GET',
+        success: function (data) {
+          if (data != null) {
+            if (data.profilePhoto != null) {
+              var imagePath = "/images/" + data.profilePhoto;
+              $('.profile-photo').attr('src', imagePath);
+            }
+            $('#userName').html(data.userName)
+          }
+        },
+        error: function () {
+          console.error('Failed to load profile photo.');
+        }
+      });
+
+
+    });
+    $(function () {
+      var message = '@Html.Raw(TempData["ToastrMessage"])';
+      var type = '@Html.Raw(TempData["ToastrType"])';
+      if (message.trim() !== '') {
+        switch (type) {
+          case 'success':
+            toastr.success(message)
+            break;
+          case 'error':
+            toastr.error(message)
+            break;
+          case 'warning':
+            toastr.warning(message)
+            break;
+          case 'info':
+            toastr.info(message)
+        }
+      }
+    });
+    toastr.options = {
+      "closeButton": true,      // Show close button
+      "debug": false,
+      "newestOnTop": true,
+      "progressBar": true,      // Show progress bar
+      "positionClass": "toast-top-right", // Change position
+      "preventDuplicates": true,
+      "onclick": null,
+      "showDuration": "300",
+      "hideDuration": "1000",
+      "timeOut": "2000",        // Auto-close after 5 seconds
+      "extendedTimeOut": "1000",
+      "showEasing": "swing",
+      "hideEasing": "linear",
+      "showMethod": "fadeIn",
+      "hideMethod": "fadeOut"
+    };
+
+  </script>
+  <script type="text/javascript"
+    src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+  <script>
+    $(document).click(function () {
+      if ($.cookie('AuthToken') == null)
+        window.location.href = "/Authentication/Login";
+    })
+  </script>
+</body>
+
+</html>

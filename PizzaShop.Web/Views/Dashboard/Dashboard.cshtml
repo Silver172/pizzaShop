@@ -1,0 +1,23 @@
+@model PizzaShop.DataAccess.ViewModels.DashboardViewModel;
+@{
+    ViewData["Title"] = "Dashboard";
+   
+}
+
+<div class="dashboard-title d-flex justify-content-between">
+    <div>
+        <h2 class="text-center">Dashboard</h2>
+    </div>
+    <div><select class="form-select form-select-md mb-3" id="select-date-range" aria-label=".form-select-lg example">
+            <option selected>Current Month</option>
+            <option value="This Week">This Week</option>
+            <option value="This Year">This Year</option>
+            <option value="Last 30 days">Last 30 days</option>
+            <option value="Today">Today</option>
+        </select></div>
+</div>
+<div id="dashboardContainer">
+    <partial name="_DashboardData" model="Model"/>
+</div>
+
+<script src="~/js/Dashboard.js" asp-append-version="true"></script>

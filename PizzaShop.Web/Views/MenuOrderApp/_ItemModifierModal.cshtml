@@ -1,0 +1,63 @@
+@model List<PizzaShop.DataAccess.ViewModels.ItemModifierViewModel>;
+
+<div class="modal fade" id="modifierModal" tabindex="-1" aria-labelledby="productModalLabel">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="HeaderItemName"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                @if (Model.Count() == 0)
+                {
+                    <div class="text-center text-secondary">No Modifiers Found</div>
+                }
+                @foreach (var m in Model)
+                {
+                    <div class="mb-3">
+                        <strong>@m.Name</strong>
+                        <small class="text-muted ms-1">(You can choose Minimum - @m.Minselectionrequired & Maximum -
+                            @m.Maxselectionrequired options)</small>
+                        <div class="d-flex flex-wrap gap-2 mt-2">
+                            @foreach (var mod in m.ModifierList)
+                            {
+                                <div class="modifier-card" data-data='@Html.Raw(Json.Serialize(mod))'
+                                    data-max="@m.Maxselectionrequired" data-min="@m.Minselectionrequired"
+                                    data-mgId="@m.ModifierGroupId">
+                                    <div class="d-flex flex-column">
+                                        <div class="d-flex">
+                                            <p class="text-start p-1 mb-0 fw-medium">@mod.Name</p>
+                                        </div>
+                                        <div class="top-right-border-vegan"></div>
+                                    </div>
+                                    <span class="price">₹@mod.Rate</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="modal-footer" id="item-modifier-footer">
+                <button type="button" class="btn btn-primary" id="AddModifiers">Add</button>
+                <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        ModalData = @Html.Raw(Json.Serialize(Model));
+        var url = window.location.href;
+        var orderId = url.split('/').pop();
+        if (orderId == "Index" || orderId == "") {
+            $("#item-modifier-footer").addClass("d-none");
+        } else {
+            $("#item-modifier-footer").removeClass("d-none");
+        }
+    })
+</script>

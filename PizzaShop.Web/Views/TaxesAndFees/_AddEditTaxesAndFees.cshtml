@@ -1,0 +1,120 @@
+@model PizzaShop.DataAccess.ViewModels.AddEditTaxesAndFeesViewModel;
+<partial name="_ValidationScriptsPartial" />
+
+<div class="container mt-5">
+    <div class="modal fade" id="addEditTaxModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title">@(Model.Id == 0 ? "Add New Tax" : "Edit Tax")</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-1">
+                    <form class="p-3" id="addEditNewTaxForm" data-id="@Model.Id">
+                        <input type="number" asp-for="Id" hidden>
+                        <div class="row">
+                            <div class="col mb-3">
+                                <div class="form-floating">
+                                    <input asp-for="Name" type="text" class="form-control" placeholder="Name" />
+                                    <label for="Name">Name*</label>
+                                    <span asp-validation-for="Name" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col mb-3">
+                                <div class="form-floating">
+                                    <select asp-for="Type" class="form-select" id="Type">
+                                        <option selected disabled hidden>Select Type</option>
+                                        <option value="Percentage">Percentage</option>
+                                        <option value="Flat Amount">Flat Amount</option>
+                                    </select>
+                                    <label for="Type">Type*</label>
+                                    <span asp-validation-for="Type" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col mb-3">
+                                <div class="form-floating">
+                                    <input asp-for="TaxValue" type="number" class="form-control" name="TaxValue" id="TaxValue" />
+                                    <label for="TaxValue">Tax Amount*</label>
+                                    <span asp-validation-for="TaxValue" class="text-danger taxValueError"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex">
+                            <div class="form-check form-switch me-2 d-flex justify-content-start align-items-center">
+                                <input type="checkbox" class="form-check-input mt-0" asp-for="Isactive" />
+                                <label for="Isactive" class="mx-1">IsEnabled</label>
+                                <input type="hidden" value="false" />
+                            </div>
+                            <div class="form-check form-switch d-flex justify-content-start align-items-center">
+                                <input type="checkbox" class="form-check-input mt-0" asp-for="Isdefault" />
+                                <label for="Isdefault" class="mx-1">IsDefault</label>
+                                <input type="hidden" value="false" />
+                            </div>
+                        </div>
+                        <div class="modal-footer d-flex justify-content-end border-0">
+                            <button class="btn btn-primary" type="submit" id="submitTaxForm">Save</button>
+                            <button type="button" class="btn btn-outline-primary"
+                                data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $("#addEditNewTaxForm").submit(function (event) {
+        event.preventDefault();
+        var form = $("#addEditNewTaxForm")[0];
+        var formData = new FormData(form);
+
+        var isValid = validateTaxValue();
+        if (!isValid) {
+            return;
+        }
+
+        $.ajax({
+            url: '/TaxesAndFees/AddEditTax',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                if (response.isValid == false)
+                    return;
+                if (response.isExist) {
+                    toastr.error(response.message);
+                }
+                if (response.isSuccess) {
+                    toastr.success(response.message);
+                    $("#addEditTaxModal").modal('hide');
+                    GetFilteredTaxes();
+                }
+            },
+            error: function (error) {
+                toastr.error(error.message)
+            }
+        })
+    })
+
+
+    function validateTaxValue() {
+        var taxType = $('#Type').val();
+        var taxValue = parseFloat($('#TaxValue').val());
+
+        if (taxType === 'Percentage' && (taxValue < 0 || taxValue > 100)) {
+            toastr.error("Tax Value must be between 0 and 100.");
+            return false;
+        } else if (taxType === 'Flat Amount' && taxValue < 0) {
+            toastr.error("Tax Value must be non-negative.");
+            return false;
+        }else if(taxType === 'Flat Amount' && taxValue > 9999999.99) {
+            toastr.error("Invalid Tax Value.");
+            return false;
+        }
+        return true;
+    }
+</script>

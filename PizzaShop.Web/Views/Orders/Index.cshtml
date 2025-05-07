@@ -1,0 +1,170 @@
+@{
+    ViewData["Title"] = "Index";
+    var PageSize = Model.Pagination.PageSize;
+    var PageIndex = Model.Pagination.PageIndex;
+    var TotalPage = Model.Pagination.TotalPage;
+    var SearchString = Model.Pagination.SearchString;
+    var TotalRecord = Model.Pagination.TotalRecord;
+    var StatusDropDown = new List<string>{"All Status","Pending", "In Progress", "Served", "Completed", "Cancelled", "On Hold", "Failed"};
+    var TimeDropDown = new List<String>{"All Time","Last 7 days", "Last 30 days",  "Current Month"};
+}
+@model PizzaShop.DataAccess.ViewModels.OrdersPageViewModel;
+<!-- Taxes And Fees header -->
+
+<div class="row my-2 orderHeader">
+    <div class="row my-1 mx-1">
+        <div class="col-xl-3 col-12 d-flex justify-content-xl-start justify-content-center">
+            <h2 class="pageHeading textBlue">Orders</h2>
+        </div>
+
+        <div class="col-xl-9 mb-2 col-12 px-0">
+            <div class="row">
+                <div class="col-md-3 col-6">
+                    <input type="text" class="form-control" id="searchOrders" placeholder="Search" />
+                </div>
+                <div class="col-md-3 col-6">
+                    <select name="" id="statusDropDown" class="form-control form-select">
+                        @foreach (var i in StatusDropDown)
+                        {
+                            <option value=@i>@i</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-3 col-6 mt-md-0 mt-2">
+                    <select name="" id="timeDropDown" class="form-control form-select ">
+                        @foreach (var i in TimeDropDown)
+                        {
+                            <option value=@i>@i</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3 col-6 mt-md-0 mt-2">
+                    <button type="button" class="btn btn-primary w-100" id="ExportToExcel">
+                        <span><i class="fa-solid fa-share-from-square me-1"></i></span>
+                        <span>Export</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <div class="row d-flex justify-content-md-end mx-1">
+        <div class="col-xl-8 col-12 px-0">
+            <div class="row">
+                <div class="col-md-4 col-12 form-floating">
+                    <input type="date" class="form-control DateStyle" placeholder="rate" id="FromDate"/>
+                    <label for="rate" class="labelCSS">From Date</label>
+                </div>
+                <div class="col-md-4 mt-md-0 mt-2 col-12 form-floating ">
+                    <input type="date" class="form-control DateStyle" placeholder="rate" id="ToDate"/>
+                    <label for="rate" class="labelCSS">To Date</label>
+                </div>
+                <div class="col-md-2 col-6 mt-md-0 mt-2 ">
+                    <button type="button" class="btn btn-primary w-md-0 w-100" id="searchOnDateRange">Search</button>
+                </div>
+                <div class="col-md-2 col-6 mt-md-0 mt-2">
+                    <button type="button" class="btn btn-primary w-100" id="clearDateRange">Clear</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="OrderListContainer">
+    @Html.Partial("_OrdersList",Model)
+</div>
+
+<div id="addEditTaxContainer"></div>
+</div>
+
+<div id="InvoiceDetailContainer" class="d-none"></div>
+
+<script>
+    var SortBy = '';
+    var SortType = '';
+
+    
+     $("#ExportToExcel").click(function () {
+        var SearchString = $("#searchOrders").val();
+        var pageSize = $("#OrderPageSize").val();
+        var status = $("#statusDropDown").val();
+        var time = $("#timeDropDown").val();
+        
+        $.ajax({
+            url: "/Orders/ExportToExcel",
+            type: "POST",
+            data: {
+                pageIndex: OrderPageIndex,
+                pageSize: pageSize,
+                searchString: SearchString,
+                fromDate: FromDate,
+                toDate: ToDate,
+                status: status,
+                time: time
+            },
+            xhrFields :{
+                responseType: 'blob'
+            },
+            success: function (data, status, xhr) {
+                var ExcelFile = new Blob([data], { type: xhr.getResponseHeader('content-type') });
+                var a = document.createElement("a");
+                var url = window.URL.createObjectURL(data);
+                a.href = url;
+                a.download = 'Orders.xlsx';
+                a.click();
+            },
+            error: function (error) {
+                toastr.error("Error while download excel file");
+            }
+        })
+    });
+
+    $("#FromDate").change(function () {
+        FromDate = $(this).val();
+        document.getElementById("ToDate").setAttribute("min", FromDate);
+    })
+
+    $("#ToDate").change(function () {
+        ToDate = $(this).val();
+        document.getElementById("FromDate").setAttribute("max", ToDate);
+    })
+
+    $("#searchOnDateRange").click(function () {
+        if((FromDate != '' ||  ToDate != '') && FromDate > ToDate)
+            toastr.warning("Invalid date range")
+        else
+            GetFilteredOrders();
+    })
+   
+
+    $(document).on("click",".sorting",function()
+    {
+        SortType = $(this).data('type');
+        SortBy = $(this).data('name');
+        
+        GetFilteredOrders();
+    })
+
+    $("#clearDateRange").click(function(){
+        const FD = document.querySelector("#FromDate");
+        const TD = document.querySelector("#ToDate");
+        const SearchOs = document.querySelector("#searchOrders");
+        const orderPz = document.querySelector("#OrderPageSize");
+        const TimeDr = document.querySelector("#timeDropDown");
+        const StatusDr = document.querySelector("#statusDropDown");
+        SearchOs.value = '';
+        orderPz.value = 5;
+        TimeDr.value = 'All Time';
+
+        TimeDr.value = "All Time";  
+        FD.value = ''; 
+        TD.value = ''; 
+        FromDate = '';
+        StatusDr.value = 'All Status'
+        ToDate = '';
+         var today = new Date();
+        document.getElementById("FromDate").setAttribute("max", today);
+        document.getElementById("ToDate").setAttribute("max", today);
+        GetFilteredOrders();
+    })
+</script>

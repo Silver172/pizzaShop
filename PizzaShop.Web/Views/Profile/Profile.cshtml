@@ -1,0 +1,269 @@
+@{
+  ViewData["Title"] = "Profile";
+  var query = Context.Request.Query["OrderApp"];
+  Layout = query == "true" ? "_OrderAppLayout" : "_Layout";
+}
+
+@model PizzaShop.ViewModels.ProfileViewModel;
+
+<div class="content-bg mt-3">
+  <!-- Add User header -->
+  <div class="row align-items-center d-flex flex-wrap mb-3">
+    <h1 class="fs-2  col-md-4 text-primary font-weight-bold">My Profile</h1>
+  </div>
+  <!-- Form -->
+  <div class="shadow card container-fluid p-3 shadow">
+    <form asp-controller="Profile" enctype="multipart/form-data" asp-route-OrderApp="@query" asp-action="Profile" method="post"
+      class="row needs-validation">
+      <input type="hidden" name="Email" asp-for="@Model.Email">
+      <input type="hidden" name="Role" asp-for="@Model.Role">
+      <div>
+        <div>
+          <img class="profile-bg" src="~/images/profile_div_bg.jpg" alt="profile-bg">
+        </div>
+        <div class="row mx-2">
+          <div class="col-md-2 d-flex justify-content-center p-0">
+            <img src="~/images/@(Model.ProfileImagePath != null ? Model.ProfileImagePath : "Default_pfp.svg.png")"
+              class="profile-img rounded-circle" alt="profile-img">
+            <input type="file" id="ProfileImageUpload" name="ProfileImage" asp-for="ProfileImage" accept="image/*"
+              style="display: none;">
+            <label id="changeImageButton" for="ProfileImageUpload"
+              class="position-absolute bg-white camera-position z-3 rounded-circle border z-2 shadow-sm">
+              <i class="fa fa-camera p-2" for="ProfileImageUpload" aria-hidden="true"></i>
+            </label>
+            <input type="hidden" name="ProfileImagePath" asp-for="@Model.ProfileImagePath">
+          </div>
+          <div class="col-md-7 p-0 mt-3 text-center text-md-start">
+            <h3>@Model.FirstName @Model.LastName</h3>
+            <p>@Model.Role</p>
+          </div>
+          <div class="col-lg-3 mb-lg-0 mb-2 d-flex justify-content-center align-items-center">
+            @Model.Email
+          </div>
+        </div>
+        <div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <div class="form-floating">
+                <input type="firstName" class="form-control" id="firstName" placeholder="firstName" name="FirstName"
+                  asp-for="FirstName" />
+                <label for="firstName">First Name</label>
+              </div>
+              <span class="text-danger fs-6 ms-2" asp-validation-for="FirstName"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+              <div class="form-floating">
+                <input type="text" class="form-control" id="lastName" placeholder="lastName" name="LastName"
+                  asp-for="LastName" />
+                <label for="LastName">lastName</label>
+              </div>
+              <span class="text-danger fs-6 ms-2" asp-validation-for="LastName"></span>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <div class="form-floating">
+              <input type="text" class="form-control" id="userName" placeholder="name" name="UserName"
+                asp-for="UserName" />
+              <label for="userName">User Name</label>
+            </div>
+            <span class="text-danger fs-6 ms-2" asp-validation-for="UserName"></span>
+          </div>
+          <div class="col-md-6 mb-3">
+            <div class="form-floating">
+              <input type="number" class="form-control" id="phone" placeholder="name" name="Phone" asp-for="Phone" />
+              <label for="phone">Phone</label>
+            </div>
+            <span class="text-danger fs-6 ms-2" asp-validation-for="Phone"></span>
+          </div>
+        </div>
+        <div>
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <div class="form-floating">
+                <select class="form-select" asp-for="Country" id="select-country" aria-label="Select Country">
+                  <option value="">Select Country</option>
+                  @foreach (var country in ViewBag.AllCountries)
+                  {
+                    <option value="@country.Id">
+                      @country.Name
+                    </option>
+                  }
+                </select>
+                <label for="select-country">Country</label>
+              </div>
+              <span class="text-danger fs-6 ms-2" asp-validation-for="Country"></span>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="form-floating">
+                <select asp-for="State" class="form-select" id="select-state" aria-label="Select State">
+                  <option value="">Select State</option>
+                  @foreach (var state in ViewBag.AllStates)
+                  {
+                    <option value="@state.Id">
+                      @state.Name
+                    </option>
+                  }
+                </select>
+                <label for="select-state">State</label>
+              </div>
+              <span class="text-danger fs-6 ms-2" asp-validation-for="State"></span>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="form-floating">
+                <select asp-for="City" class="form-select" id="select-city" aria-label="Select City">
+                  <option value="">Select City</option>
+                  @foreach (var city in ViewBag.AllCities)
+                  {
+                    <option value="@city.Id">
+                      @city.Name
+                    </option>
+                  }
+                </select>
+                <label for="select-city">City</label>
+              </div>
+              <span class="text-danger fs-6 ms-2" asp-validation-for="City"></span>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <div class="form-floating">
+              <input type="text" asp-for="Address" class="form-control" id="Address" placeholder="Address" />
+              <label for="Address">Address</label>
+            </div>
+            <span asp-validation-for="Address" class="text-danger fs-6 ms-2"></span>
+          </div>
+          <div class="col-md-6 mb-3">
+            <div class="form-floating">
+              <input type="number" class="form-control" id="ZipCode" placeholder="ZipCode" name="ZipCode"
+                asp-for="ZipCode" />
+              <label for="ZipCode">ZipCode</label>
+            </div>
+            <span class="text-danger fs-6 ms-2" asp-validation-for="ZipCode"></span>
+          </div>
+        </div>
+        <div>
+          <div class="mt-2 d-flex justify-content-end">
+            <button class="btn btn-primary me-3" type="submit">
+              Update
+            </button>
+            <button class="btn btn-outline-primary" type="button" id="Cancel"
+              onclick="location.href='@Url.Action("Dashboard", "Dashboard")'">Cancel</button>
+          </div>
+          <span class="text-success">@ViewData["ProfileSuccessMessage"]</span>
+        </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+  $(document).ready(function () {
+    var selectedCountry = $("#select-country").val();
+    @* if (selectedCountry) {
+            loadStates(selectedCountry);
+        } *@
+
+      $("#select-country").change(function () {
+
+        var countryID = $(this).val();
+        $("#select-state").html('<option value="">Select State</option>');
+        $("#select-city").html('<option value="">Select City</option>');
+
+        if (countryID) {
+          loadStates(countryID);
+        }
+      });
+
+    function loadStates(countryID) {
+      $.ajax({
+        url: '/Users/GetStates',
+        type: 'GET',
+        data: { countryID: countryID },
+        success: function (data) {
+
+          $.each(data, function (i, state) {
+            $("#select-state").append('<option value="' + state.id + '" data-id="' + state.id + '">' + state.name + '</option>');
+          });
+
+          // Auto-select the state if already chosen
+          var selectedState = $("#select-state").attr("data-selected");
+          if (selectedState) {
+            $("#select-state").val(selectedState).trigger("change");
+          }
+        }
+      });
+    }
+
+    $("#select-state").change(function () {
+      var stateID = $(this).val();
+      $("#select-city").html('<option value="">Select City</option>');
+
+      if (stateID) {
+        loadCities(stateID);
+      }
+    });
+
+    function loadCities(stateID) {
+      $.ajax({
+        url: '/Users/GetCities',
+        type: 'GET',
+        data: { stateID: stateID },
+        success: function (data) {
+          $.each(data, function (i, city) {
+            $("#select-city").append('<option value="' + city.id + '" data-id="' + city.id + '">' + city.name + '</option>');
+          });
+
+          // Auto-select the city if already chosen
+          var selectedCity = $("#select-city").attr("data-selected");
+          if (selectedCity) {
+            $("#select-city").val(selectedCity);
+          }
+        }
+      });
+    }
+
+    // Pre-select state and city after country loads
+    $("#stateDropDown").attr("data-selected", "@ViewBag.SelectedStateId");
+    $("#cityDropDown").attr("data-selected", "@ViewBag.SelectedCityId");
+
+    document.getElementById("ProfileImageUpload").addEventListener("change", function (event) {
+      var file = event.target.files[0];
+      const uploadfile = document.querySelector('#ProfileImageUpload');
+      if (file) {
+        if (!file.type.startsWith('image/')) {
+          toastr.warning("Invalid file type. Please upload an image file.");
+          uploadfile.value = '';
+          return;
+        }
+        const maxSize = 2 * 1024 * 1024; // 5MB
+        if (file.size > maxSize) {
+          toastr.warning("File size exceeds 2MB. Please choose a smaller image.");
+          uploadfile.value = '';
+          return;
+        }
+
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          document.querySelector(".profile-img").src = e.target.result;
+        }
+        reader.readAsDataURL(file);
+      }
+    });
+  });
+
+  $(document).ready(function(){
+    var url = window.location.href;
+    var urlParams = url.split('/').pop();
+    console.log(@query)
+    @* if(urlParams == "?OrderApp")
+    {
+      console.log("Order App") *@
+      @* @layout = "_OrderAppLayout"; *@
+    @* } *@
+
+  })
+</script>

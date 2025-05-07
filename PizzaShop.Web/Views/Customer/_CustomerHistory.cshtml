@@ -1,0 +1,103 @@
+@model PizzaShop.DataAccess.ViewModels.CustomerHistoryViewModel;
+
+<div class="modal fade" id="customerHistoryModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">Customer History</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3 rounded" style="background-color: rgb(247, 247, 247);">
+                <div class="row gap-2 px-1">
+                    <div class="col p-2 bg-white">
+                        <div class=" d-flex flex-wrap justify-content-between p-2 shadow-sm border rounded-2 bg-light h-100">
+                            <span class="text-secondary">Name</span>
+                            <span class="fw-bold">@Model?.Name</span>
+                        </div>
+                    </div>
+                    <div class="col p-2">
+                        <div class=" d-flex flex-wrap justify-content-between p-2 shadow-sm border rounded-2 bg-light h-100">
+                            <span class="text-secondary">Average Bill</span>
+                            <span class="fw-bold">@Model?.AverageBill</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row gap-2 px-1">
+                    <div class="col p-2 bg-white">
+                        <div class=" d-flex flex-wrap justify-content-between p-2 shadow-sm border rounded-2 bg-light h-100">
+                            <span class="text-secondary">Mobile Number</span>
+                            <span class="fw-bold">@Model?.Phone</span>
+                        </div>
+                    </div>
+                    <div class="col p-2">
+                        <div class=" d-flex flex-wrap justify-content-between p-2 shadow-sm border rounded-2 bg-light h-100">
+                            <span class="text-secondary">Coming Since</span>
+                            <span class="fw-bold">@Model?.ComingSince</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row gap-2 px-1">
+                    <div class="col p-2 bg-white">
+                        <div class=" d-flex justify-content-between p-2 shadow-sm border rounded-2 bg-light h-100">
+                            <span class="text-secondary">Max Order</span>
+                            <span class="fw-bold">@Model?.MaxOrder</span>
+                        </div>
+                    </div>
+                    <div class="col p-2">
+                        <div class=" d-flex justify-content-between p-2 shadow-sm border rounded-2 bg-light h-100">
+                            <span class="text-secondary">Visits</span>
+                            <span class="fw-bold">@Model?.Visits</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="shadow card px-3 mt-4">
+                    <section class="table-responsive">
+                        <table class="table table-hover user-table mb-0">
+                            <thead>
+                                <tr></tr>
+                                    <th scope="col" class="d-flex align-items-center text-start">OrderDate
+                                    </th>
+                                    <th scope="col" class="text-left">
+                                        <div class="d-flex align-items-center justify-content-start"
+                                            style="width: 100px;">Order Type
+                                        </div>
+                                    </th>
+
+                                    <th scope="col" class="text-left">Payment</th>
+                                    <th scope="col" class="text-left">Items</th>
+                                    <th scope="col" class="text-left">Amount</th>
+                                </tr>
+                            </thead>
+
+                            <tbody class="table-group-devider">
+                                
+                                @if (@Model.OrderList.Count() == 0)
+                                {
+                                    <tr>
+                                        <td colspan="7" class="text-center text-secondary">No Orders Found</td>
+                                    </tr>
+                                }
+                                @foreach (var c in @Model.OrderList)
+                                {
+                                    <tr>
+                                        <td scope="col" class="d-flex align-items-center text-start">@c.OrderDate
+                                        </td>
+                                        <td scope="col" class="text-left">
+                                            @c.OrderType
+                                        </td>
+
+                                        <td scope="col" class="text-left">@c.PaymentStatus</td>
+                                        <td scope="col" class="text-left">@c.Items</td>
+                                        <td scope="col" class="text-left">@c.Amount</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>

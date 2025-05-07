@@ -1,0 +1,108 @@
+<div class="modal fade" id="customerDetailsModal" tabindex="-1" aria-labelledby="exampleModalLabel">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-secondary">Customer Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-1">
+                <form class="p-3" id="customerDetailForm" onsubmit="return false">
+
+                    <div class="row">
+                        <div class="form-floating  p-0 col">
+                            <input type="text" id="customerName" class="form-control" placeholder="Name" name="name"
+                                required />
+                            <label for="Name">Name*</label>
+                            <span class="text-danger ms-1 error"></span>
+                        </div>
+                    </div>
+                    <div class="row gap-3">
+                        <div class="form-floating  p-0 col">
+                            <input type="number" id="customerPhone" class="form-control" placeholder="Name" name="phone"
+                                required />
+                            <label for="Name">Mobile Number*</label>
+                            <span class="text-danger ms-1 error"></span>
+                        </div>
+                        <div class="form-floating p-0 col">
+                            <input type="number" id="customerNoOfPerson" class="form-control" placeholder="Capacity"
+                                name="noOfPerson" required>
+                            <label for="Capacity">No of Person*</label>
+                            <span class="text-danger ms-1 error"></span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-floating  p-0 col">
+                            <input type="text" class="form-control" id="customerEmail" placeholder="Email" name="email"
+                                autocomplete="off" readonly required />
+                            <label for="Email">Email*</label>
+                            <span class="text-danger ms-1 emailValidation error"></span>
+                        </div>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-end border-0 p-0">
+                        <button class="btn btn-primary" type="submit" id="submitCustomerUpdateForm">Save</button>
+                        <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $("#customerDetailForm").validate({
+        rules: {
+            name: {
+                required: true
+            },
+            phone: {
+                required: true
+            },
+            noOfPerson: {
+                required: true
+            }
+        },
+        messages: {
+            name: {
+                required: "name is required"
+            },
+            phone: {
+                required: "mobile number is required"
+            },
+            noOfPerson: {
+                required: "No of person is required"
+            }
+        },
+        errorPlacement: function (error, elment) {
+            error.appendTo(elment.parent().find(".error"));
+        }
+    })
+
+    $("#customerDetailForm").submit(function () {
+        if ($("#customerDetailForm").valid()) {
+            var noOfPerson = $("#customerNoOfPerson").val()
+            var phone = $("#customerPhone").val()
+            var name = $("#customerName").val()
+            var email = $("#customerEmail").val()
+            var id = orderDetails.id
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("UpdateCustomer", "MenuOrderApp")',
+                data: { id: id, name: name, email: email, phone: phone, noOfPerson: noOfPerson },
+                success: function (response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        $("#customerDetailsModal").modal('hide');
+                        GetOrderDetails();
+                    }
+                    else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function (error) {
+                    toastr.error(error.message)
+                }
+            })
+        }
+    })
+</script>

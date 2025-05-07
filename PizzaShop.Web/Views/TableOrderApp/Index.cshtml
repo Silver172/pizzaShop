@@ -1,0 +1,187 @@
+@model PizzaShop.DataAccess.ViewModels.TableViewOrderAppViewModel;
+@{
+    ViewData["Title"] = "Index";
+    Layout = "_OrderAppLayout";
+}
+
+<section>
+    <div class="row">
+        <div class="col-12 col-sm-4">
+            <h1 class="textBlue ">Tables View</h1>
+        </div>
+        <div class="col-12 col-sm-8 d-sm-flex flex-sm-row flex-wrap justify-content-sm-end align-items-center gap-2">
+            <div class="d-flex d-sm-block justify-content-center align-items-center">
+                <span class="status-dot status-empty mx-2 "></span><span>Available</span>
+                <span class="status-dot status-selected mx-2 "></span><span>Selected</span>
+            </div>
+
+            <div class="d-flex d-sm-block justify-content-center align-items-center">
+                <span class="status-dot status-filled mx-2 "></span><span>Assigned</span>
+                <span class="status-dot status-reserved mx-2 "></span><span>Running</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="p-3 ">
+        <div class="accordion accordion-flush" id="accordionFlushExample">
+            @if (Model.SectionList == null || Model.SectionList.Count() == 0)
+            {
+                <p>No Sections Found</p>
+            }
+            else
+            {
+                @foreach (var s in Model.SectionList)
+                {
+                    <div class="accordion-item my-1">
+                        <h2 class="accordion-header d-sm-flex  justify-content-md-between align-items-center p-2"
+                            data-id="@s.Id">
+                            <button class="accordion-button collapsed textBlue fw-bold bg-white shadow-none border-0"
+                                type="button" data-bs-toggle="collapse" data-bs-target="#@s.Id" aria-expanded="false"
+                                aria-controls="@s.Id">
+                                @s.Name
+                            </button>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <span class="status-dot status-empty"></span> <span class="status-count">@s.Available</span>
+                                    <span class="status-dot status-filled"></span> <span class="status-count">@s.Assigned</span>
+                                    <span class="status-dot status-reserved"></span> <span
+                                        class="status-count">@s.Running</span>
+                                </div>
+                                <button class="btn btn-outline-primary ms-2 d-flex createWaitingTokenBtn" data-id="@s.Id"
+                                    style="width: 150px;" > + Waiting
+                                    Token</button>
+                            </div>
+                        </h2>
+                        <div id="@s.Id"
+                            class="accordion-collapse collapse @(Model.SectionList.First().Id == @s.Id ? "show" : "")"
+                            data-bs-parent="#accordionFlushExample">
+                            <div class="accordion-body bg-white">
+                                <div class="d-flex flex-wrap gap-3">
+                                    @foreach (var t in s.TableList)
+                                    {
+                                        <div class="table-card @t.Status cursor-pointer"
+                                            data-id="@t.Id" data-capacity="@t.Capacity" data-orderid="@t.OrderId">
+                                            <div class="d-flex justify-content-between text-start">
+                                                <strong>@t.Name </strong>
+                                                <span>₹ @t.TotalAmount</span>
+                                            </div>
+                                            <div class="row d-flex justify-content-between">
+
+                                                <span class="col-5 d-flex flex-column text-start"><span>👥</span>
+                                                    <span>@t.Capacity</span></span>
+                                                <span class="col-7 d-flex flex-wrap flex-column"><span class="text-center"><i
+                                                            class="fa-solid fa-stopwatch" style="color: #a3a3a3;"></i></span><span
+                                                        class="">@t.TimeDuration</span></span>
+
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <span>
+                                        <button class="btn btn-primary fs-6 assignTableBtn mt-2 mt-md-0"
+                                            disabled>Assign</button>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+            }
+        </div>
+    </div>
+</section>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
+    <div id="assignTableOffCanvas"></div>
+</div>
+<div id="createWaitingTokenContainer"></div>
+
+<script>
+    var TableIds = [];
+    var TableData = [];
+    var SectionIds = 0;
+    $(".table-available").click(function () {
+        if ($(this).hasClass("filled") || $(this).hasClass("reserved")) {
+            return;
+        }
+        var tableId = $(this).data("id");
+        var tableCapacity = $(this).data("capacity");
+        var sId = $(this).closest(".accordion-item").find(".accordion-header").data("id");
+
+        if (SectionIds != sId) { TableIds = []; TableData = []; }
+        SectionIds = sId;
+
+        if (!TableIds.includes(tableId)) {
+            TableIds.push(tableId);
+            TableData.push({ Id: tableId, Capacity: tableCapacity });
+        } else {
+            TableIds = TableIds.filter(t => t != tableId);
+            TableData = TableData.filter(t => t.Id != tableId);
+        }
+
+        TableIds.length > 0 ? $(".assignTableBtn").removeAttr("disabled") : $(".assignTableBtn").attr("disabled", "disabled");
+
+        if ($(this).hasClass("table-select")) {
+            $(this).removeClass("table-select")
+        } else {
+            $(this).addClass("table-select")
+        }
+    });
+
+    $(".accordion-button").click(function () {
+        TableIds = [];
+        TableData = [];
+        $(".table-card").removeClass("table-select");
+        $(".assignTableBtn").attr("disabled", "disabled");
+    });
+
+    $(".assignTableBtn").click(function () {
+        var sectionId = $(this).closest(".accordion-item").find(".accordion-header").data("id");
+        $.ajax({
+            type: "GET",
+            url: '@Url.Action("AssignTable", "TableOrderApp")',
+            data: {
+                id: sectionId
+            },
+            success: function (response) {
+                $("#assignTableOffCanvas").html(response);
+                @* var offcanvas = new bootstrap.Offcanvas($("#offcanvasRight"));
+                offcanvas.show(); *@
+                    $("#offcanvasRight").offcanvas("show");
+            }
+        })
+    });
+
+
+    $(".createWaitingTokenBtn").click(function () {
+        var id = $(this).data('id');
+        $.ajax({
+            url: '@Url.Action("AddEditWaitingToken", "WaitingListOrderApp")',
+            type: 'GET',
+            data: { id: null },
+            success: function (response) {
+                $("#createWaitingTokenContainer").html(response);
+                $("#addEditWaitingListModal").modal('show');
+                $("#WTSectionDropDown").val(id)
+            },
+            error: function (error) {
+                toastr.error(error.message);
+            }
+        })
+    })
+
+    $(".table-running").click(function () {
+        var orderId = $(this).data("orderid");
+        if (orderId) {
+            window.location.href = '@Url.Action("Index", "MenuOrderApp")' + '/?id=' + orderId;
+        }
+    });
+    $(".table-assigned").click(function () {
+        var orderId = $(this).data("orderid");
+        if (orderId) {
+            window.location.href = '@Url.Action("Index", "MenuOrderApp")' + '/?id=' + orderId;
+        }
+    });
+</script>

@@ -1,0 +1,96 @@
+@model PizzaShop.DataAccess.ViewModels.AddEditTableViewModel;
+<partial name="_ValidationScriptsPartial" />
+
+<div class="container mt-5">
+    <div class="modal fade" id="addEditTableModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title">@(Model.Id == 0 ? "Add Table" : "Edit Table")</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-1">
+                    <form class="p-3" id="addEditNewTableForm" data-id="@Model.Id">
+                        <input type="number" asp-for="Id" hidden>
+                        <div class="row">
+                            <div class="form-floating mb-3 p-0 col">
+                                <input asp-for="Name" type="text" class="form-control" placeholder="Name" />
+                                <label for="Name">Name*</label>
+                                <span asp-validation-for="Name" class="text-danger ms-1"></span>
+                            </div>
+                            <div class="col mb-3">
+                                <div class="form-floating">
+                                    <select asp-for="Sectionid" class="form-select" id="SectionId">
+                                        <option selected disabled hidden>Select a Section</option>
+                                        @foreach(var s in Model.Sections)
+                                        {
+                                            <option value="@s.Id">@s.Name</option>
+                                        }
+                                    </select>
+                                    <label for="SectionId">Section*</label>
+                                    <span asp-validation-for="Sectionid" class="text-danger ms-1"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-floating p-0 col">
+                                <input asp-for="Capacity" type="number" class="form-control" placeholder="Capacity">
+                                <label for="Capacity">Capacity*</label>
+                                <span asp-validation-for="Capacity" class="text-danger ms-1"></span>
+                            </div>
+                            <div class="col">
+                                <div class="form-floating">
+                                    <select asp-for="Status" class="form-select"
+                                        aria-label="Floating label select example">
+                                        <option selected disabled hidden>Select a Status</option>
+                                        <option value="Available">Available</option>
+                                        <option value="Occupied">Occupied</option>
+                                    </select>
+                                    <label for="Status">Status*</label>
+                                    <span asp-validation-for="Status" class="text-danger ms-1"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer d-flex justify-content-end border-0">
+                            <button class="btn btn-primary" type="submit" id="submitTableForm">Save</button>
+                            <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $("#addEditNewTableForm").submit(function(event){
+        event.preventDefault();
+        var form = $("#addEditNewTableForm")[0];
+        var formData = new FormData(form);
+        $.ajax({
+            url: '/TableAndSection/AddTable',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                if(response.isValid == false)
+                    return;
+                if(response.isExist)
+                {
+                    toastr.error(response.message);
+                }
+                if(response.isSuccess)
+                {
+                    toastr.success(response.message);
+                    $("#addEditTableModal").modal('hide');
+                    GetFilteredTables();
+                }
+            },
+            error: function (error) {
+                toastr.error(error.message)
+            }
+        })
+    })
+</script>

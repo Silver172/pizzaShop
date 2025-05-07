@@ -1,0 +1,42 @@
+@model PizzaShop.DataAccess.ViewModels.TaxesAndFeesPageViewModel;
+@inject IHttpContextAccessor Accessor;
+@using Newtonsoft.Json;
+@using PizzaShop.ViewModels;
+@{
+    ViewData["Title"] = "Index";
+    var permission = JsonConvert.DeserializeObject<List<ManageRolePermissioinViewModel>>(Accessor.HttpContext.Session.GetString("permission"));
+}
+
+
+<!-- Taxes And Fees header -->
+<div class="row">
+    <div class="col-md-3 d-flex justify-content-center justify-content-md-start align-items-center">
+        <h2 class="textBlue">Taxes/Fees</h2>
+    </div>
+    <div class="col-md-9">
+        <div class="d-flex justify-content-center justify-content-md-end align-items-center my-1">
+            <div class="form-input-div my-3 me-3">
+                <input type="text" placeholder="Search" class="form-control p-2" name="searchString" id="searchTnf" />
+                <span class="form-input-icon"><i class="fa-solid fa-search" id="eye-icon" style="color: gray"></i>
+                </span>
+            </div>
+            <button class="btn btn-primary me-3 d-flex justify-content-center align-items-center d-@(permission[4].Canaddedit == false ? "none" : "")" id="AddTnfBtn">
+                <i class="fa-solid fa-plus me-sm-2 py-1 py-sm-0"></i> <span class="d-none d-sm-block">New Tax</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="taxListContainer">
+    @Html.Partial("_TaxesNFeesList", Model)
+</div>
+<div id="addEditTaxContainer"></div>
+
+<script>
+    $("#AddTnfBtn").click(function(){
+        $.get('@Url.Action("AddEditTax","TaxesAndFees")' , function(response){
+            $("#addEditTaxContainer").html(response);
+            $("#addEditTaxModal").modal('show');
+        })
+    })
+</script>

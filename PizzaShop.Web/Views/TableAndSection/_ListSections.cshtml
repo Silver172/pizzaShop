@@ -1,0 +1,117 @@
+@model PizzaShop.DataAccess.ViewModels.TableAndSectionViewModel;
+@inject IHttpContextAccessor Accessor;
+@using Newtonsoft.Json;
+@using PizzaShop.ViewModels;
+@{
+    var permission = JsonConvert.DeserializeObject<List<ManageRolePermissioinViewModel>>(Accessor.HttpContext.Session.GetString("permission"));
+}
+
+@if (Model.SectionList.Count() == 0)
+{
+    <div class="text-center text-secondary">
+        <p>No Selections Found</p>
+    </div>
+}
+else
+{
+    @foreach (var s in Model.SectionList)
+    {
+        <div class="d-flex flex-wrap justify-content-between align-items-center item-category-btn p-2 my-2 section-div @(s.Id == Model.SectionList.First().Id ? "activeTabColor" : "")" data-id="@s.Id">
+            <h6 class="mb-0 fw-bold">
+                <img src="~/images/icons/grid-six.svg" alt="grid-icon" class="category-btn-icon" />@s.Name
+            </h6>
+            <span class="edit-delete-icon">
+                <i class="fa-solid fa-pen mx-2 editSection d-@(permission[3].Canaddedit == false ? "none" : "")" data-id="@s.Id"></i>
+                <i class="fa-regular fa-trash-can mx-2 deleteSection d-@(permission[3].Candelete == false ? "none" : "")" data-id="@s.Id" data-bs-toggle="modal" data-bs-target="#deleteSectionModal"></i>
+            </span>
+        </div>
+    }
+}
+
+<div id="addSectionContainer"></div>
+<div id="editSectionContainer">
+
+</div>
+
+<!-- Delete Section Modal -->
+<div class="modal fade" id="deleteSectionModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Delete Confirmation</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="text-center">
+                <i class="fa-solid fa-triangle-exclamation fa-2xl" style="color: #FFD43B;"></i>
+            </div>
+            <div class="modal-body text-center p-1">
+                <p class="fw-bold mb-0">Are you sure you want to delete this section?</p>
+            </div>
+            <div class="modal-footer d-flex justify-content-center border-0">
+                <button type="button" class="btn btn-primary" id="confirmDeleteSectionBtn">Yes</button>
+                <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">No</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var sectionId = @Model.SectionList?.First().Id;
+
+    $(".section-div").click(function(){
+        sectionId = $(this).data('id')
+        $(".section-div").removeClass('activeTabColor');
+        $(this).addClass("activeTabColor");
+        selectedIds = [];
+        $("#searchTables").val("");
+        GetFilteredTables();
+    })
+
+    $(".editSection").click(function(){
+        var id = $(this).data('id');
+
+         $.ajax({
+            url: '/TableAndSection/EditSection',
+            type: 'GET',
+            data: {id: id},
+            success: function (response) {
+                $("#editSectionContainer").html(response);
+                $("#editSectionModal").modal('show');
+            },
+            error: function (error) {
+                toastr.error("Please try again");
+            }
+        })
+    })
+
+    var deleteSectionId;
+    $(".deleteSection").click(function(){
+        deleteSectionId = $(this).data('id');
+    })
+
+    $("#confirmDeleteSectionBtn").click(function(){
+        $.ajax({
+            url: '/TableAndSection/DeleteSection',
+            type: 'POST',
+            data: {id: deleteSectionId},
+            success: function (response) {
+               if (response.isExist) {
+                    toastr.error(response.message);
+                    $("#deleteSectionModal").modal('hide');
+                }
+                else{
+                    toastr.success("Section deleted successfully");
+                    $("#deleteSectionModal").modal('hide');
+                    $("#section-list").html(response);
+                    sectionId = @Model.SectionList?.First().Id;
+                    GetFilteredTables();    
+                }
+            },
+            error: function (error) {
+                toastr.error("Please try again");
+            }
+        })
+    })
+    
+</script>

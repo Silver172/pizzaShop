@@ -1,0 +1,29 @@
+@inject IHttpContextAccessor Accessor;
+@using Newtonsoft.Json;
+@using PizzaShop.ViewModels;
+@{
+    ViewData["Title"] = "Index";
+    var permission = JsonConvert.DeserializeObject<List<ManageRolePermissioinViewModel>>(Accessor.HttpContext.Session.GetString("permission"));
+}
+
+<section class="mt-5">
+    <div class="col col-lg-8 p-4" style="background-color: white;">
+        <table class="table position-relative" style="background-color: white;">
+            <tr class="bg-light">
+                <td>Role</td>
+                <td class="text-end">Action</td>
+            </tr>
+            @foreach (var role in Model)
+            {
+                <tr class="bg-light" style="background-color: white;">
+                    <td>@role.Name</td>
+                    <td class="text-end">
+                        <i class="fa-solid fa-pen" style="cursor: pointer;display : @(permission[1].Canaddedit == false ? "none" : "")"
+                            onclick="window.location.href = '@Url.Action("ManageRolePermission", "RolePermission", new { id = role.Id })'"></i>
+                    </td>
+                </tr>
+            }
+        </table>
+    </div>
+
+</section>

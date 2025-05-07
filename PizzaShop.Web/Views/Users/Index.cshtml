@@ -1,0 +1,93 @@
+@model PizzaShop.DataAccess.ViewModels.UserPageViewModel;
+@using Newtonsoft.Json;
+@using PizzaShop.ViewModels;
+@inject IHttpContextAccessor Accessor;
+@{
+    var PageSize = Model.Pagination.PageSize;
+    var PageIndex = Model.Pagination.PageIndex;
+    var TotalPage = Model.Pagination.TotalPage;
+    var SearchString = Model.Pagination.SearchString;
+    var TotalRecord = Model.Pagination.TotalRecord;
+    var permission = JsonConvert.DeserializeObject<List<ManageRolePermissioinViewModel>>(Accessor.HttpContext.Session.GetString("permission"));
+}
+
+
+<!-- User header -->
+<div class="row">
+    <div class="col-md-3 d-flex justify-content-center justify-content-md-start align-items-center">
+        <h2 class="textBlue">Users</h2>
+    </div>
+    <div class="col-md-9">
+        <div class="d-flex justify-content-center justify-content-md-end align-items-center my-1">
+            <div class="form-input-div my-3 me-3">
+                <input type="text" placeholder="Search" class="form-control p-2" name="searchString" id="searchUser" />
+                <span class="form-input-icon"><i class="fa-solid fa-search" id="eye-icon" style="color: gray"></i>
+                </span>
+            </div>
+            <button class="btn btn-primary me-3 d-flex justify-content-center align-items-center d-@(@permission[0].Canaddedit == false ? "none" : "") "
+                onclick="window.location.href = '@Url.Action("CreateUser", "Users")'" id="AddUserBtn">
+                <i class="fa-solid fa-plus me-sm-2 py-1 py-sm-0"></i> <span class="d-none d-sm-block">Add User</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Table -->
+<div id="userListContainer">
+    @Html.Partial("_UserList", Model)
+</div>
+
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">
+                    Delete Confirmation
+                </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center p-1">
+                <img src="~/images/toppng.com-warning-icon-2400x2400.png" alt="alert-icon" id="alert-icon" />
+                <p class="fw-bold mb-0">
+                    Are you sure you want to delete this user?
+                </p>
+            </div>
+            <form asp-action="DeleteUser" asp-controller="Users">
+                <input type="hidden" name="id" id="deleteUserId" value="" />
+
+                <div class="modal-footer d-flex justify-content-center border-0">
+                    <button type="submit" class="btn btn-primary">Yes</button>
+                    <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">
+                        No
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</div>
+<script>
+    var SortType = '';
+    var SortBy = '';
+     $(document).on("click",".sorting",function()
+    {
+        SortType = $(this).data('type');
+        SortBy = $(this).data('name');
+        console.log(SortType,SortBy);
+        GetFilteredUsers();
+    })
+    document.addEventListener("DOMContentLoaded", function () {
+        var deleteModal = document.getElementById('deleteModal');
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+
+            var triggerElement = event.relatedTarget;
+            var userId = triggerElement.getAttribute('data-userid');
+            var inputField = document.getElementById('deleteUserId');
+            inputField.value = userId;
+        });
+    });
+</script>

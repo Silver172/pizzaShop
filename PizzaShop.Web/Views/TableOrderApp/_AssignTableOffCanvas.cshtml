@@ -1,0 +1,176 @@
+@model PizzaShop.DataAccess.ViewModels.AddEditWaitingTokenViewModel;
+<partial name="_ValidationScriptsPartial" />
+
+<div class="offcanvas-header">
+    <h5 class="offcanvas-title textBlue" id="offcanvasRightLabel">Waiting List</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+</div>
+<div class="offcanvas-body">
+    <table class="table table-hover user-table mb-0">
+        <thead>
+            <tr>
+                <th scope="col" class="text-left"></th>
+                <th scope="col" class="text-center">Id</th>
+                <th scope="col" class="text-center">Name</th>
+                <th scope="col" class="text-center">No. of Persons</th>
+            </tr>
+        </thead>
+
+        <tbody class="table-group-devider">
+            @if (@Model.WaitingList.Count() == 0)
+            {
+                <tr>
+                    <td colspan="8" class="text-center text-secondary">No Waiting Token is available</td>
+                </tr>
+            }
+            @foreach (var c in Model.WaitingList)
+            {
+                <tr data-id="">
+                    <td><input type="radio" name="selectToken" class="selectToken" data-data='@Html.Raw(Json.Serialize(c))'></td>
+                    <td scope="col" class="text-left">#@c.Id</td>
+                    <td scope="col" class="text-center">@c.CustomerName</td>
+                    <td scope="col" class="text-center">@c.NoOfPersons</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <h5 class="mt-4 textBlue">Customer Details</h5>
+    <form class="p-3" id="AssignTableForm" data-id="@Model.Id">
+        <input type="number" name="Id" id="tokenId" hidden>@Model.Id
+        <div class="row">
+            <div class="form-floating  p-0 col">
+                <input asp-for="Email" type="text" class="form-control" id="searchCustomer" placeholder="Email"
+                    readonly=@(Model.Id != null) autocomplete="off" />
+                <label for="Email">Email*</label>
+                <ul id="customerList" class="customer-suggestion-list">
+
+                </ul>
+
+                <span asp-validation-for="Email" class="text-danger ms-1"></span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-floating  p-0 col">
+                <input asp-for="Name" type="text" id="customerName" class="form-control" placeholder="Name" />
+                <label for="Name">Name*</label>
+                <span asp-validation-for="Name" class="text-danger ms-1"></span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-floating  p-0 col">
+                <input asp-for="MobileNumber" type="number" id="customerPhone" class="form-control"
+                    placeholder="MobileNumber" />
+                <label for="MobileNumber">Mobile Number*</label>
+                <span asp-validation-for="MobileNumber" class="text-danger ms-1"></span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-floating p-0 col">
+                <input asp-for="NoOfPersons" type="number" id="noOfPersons" class="form-control" placeholder="Capacity">
+                <label for="Capacity">No of Person*</label>
+                <span asp-validation-for="NoOfPersons" class="text-danger ms-1"></span>
+            </div>
+            <div class="col">
+                <div class="form-floating">
+                    <input type="hidden" name="SectionId" asp-for="SectionId" />
+                    <select asp-for="SectionId" class="form-select" aria-label="Floating label select example" disabled>
+                        <option selected disabled hidden>Select a Section</option>
+                        @foreach (var s in Model.SectionList)
+                        {
+                            <option value="@s.Id">@s.Name</option>
+                        }
+                    </select>
+                    <label for="Status">Section*</label>
+                    <span asp-validation-for="SectionId" class="text-danger ms-1"></span>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer d-flex justify-content-end border-0">
+            <button class="btn btn-primary me-2 px-4" type="submit" >Assign</button>
+            <button type="button" class="btn btn-outline-primary" Id="closeOffCanvas" data-bs-dismiss="offcanvas">Cancel</button>
+        </div>
+    </form>
+</div>
+
+
+<script>
+    $(".selectToken").click(function () {
+        var data = $(this).data("data");
+        
+        $("#customerName").val(data.customerName);
+        $("#customerName").prop("readonly", true);
+        $("#customerPhone").val(data.phone);
+        $("#customerPhone").prop("readonly", true);
+        $("#searchCustomer").val(data.email);
+        $("#searchCustomer").prop("readonly", true);
+        $("#customerId").val(data.customerId);
+        $("#noOfPersons").val(data.noOfPersons);
+        @* $("#noOfPersons").prop("readonly", true); *@
+        $("#tokenId").val(data.id);
+        $("#WaitingTokenForm").attr("data-id", data.id);
+        $(".text-danger").text('')
+    });
+
+    $("#AssignTableForm").submit(function(e){
+        e.preventDefault();
+        var form = $("#AssignTableForm")[0];
+        var formData = new FormData(form);
+        formData.append("TableIds", JSON.stringify(TableIds));
+
+        var isTableArrangedProperly = checkTableArrangedProperly(TableIds);
+        if(!isTableArrangedProperly)
+        {
+            return;
+        }
+        else
+        {
+            console.log("Properly Arranged",TableData);
+        }
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("AssignTable", "TableOrderApp")',
+            data: formData,
+            processData : false,
+            contentType : false,
+            success: function (response) {
+                if(response.isValid == false)
+                    return;
+                if (response.isSuccess) {
+                    $("#offcanvasRight").offcanvas("hide");
+                    var orderId = response.orderId;
+                    window.location.href = `/MenuOrderApp/Index/?id=${orderId}`
+                    toastr.success(response.message);
+                } else {
+                    toastr.error(response.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                toastr.error(status);
+            }
+        });
+    })
+
+    function checkTableArrangedProperly(tableIds) {
+        var noOfPersons = $("#noOfPersons").val();
+        var tableCapacity = 0;
+        for(let i=0;i<TableData.length; i++)
+        {
+            tableCapacity += TableData[i].Capacity;
+            if(tableCapacity >= noOfPersons && i < TableData.length-1 )
+            {
+                toastr.error("Please pick a smaller table or less tables");
+                return false;
+            }
+        }
+        if(tableCapacity < noOfPersons)
+        {
+            toastr.error("Please pick a bigger table or more tables");
+            return false;
+        }
+        return true;
+    }
+</script>
+
+
+
+

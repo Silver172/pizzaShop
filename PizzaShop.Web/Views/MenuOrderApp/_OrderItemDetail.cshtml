@@ -1,0 +1,259 @@
+@model PizzaShop.DataAccess.ViewModels.OrderDetailViewModel;
+
+@* <div class="bg-white d-none d-lg-block col-12 col-lg-5 card shadow-sm p-2 overflow-auto" id="menuOrderDetailsDiv"> *@
+<div class="row mx-0">
+  <div class="col-6 d-flex">
+    <img src="~/images/icons/dinner-table.svg" style="height: 3rem;width:2rem;" alt="">
+    <div class="d-flex ms-2" style="flex-direction: column;">
+      <div>@Model.Section</div>
+      <div>Table :
+        @foreach (var tables in Model?.Table)
+        {
+          <span>@tables ,</span>
+        }
+      </div>
+    </div>
+  </div>
+  <div class="col-6">
+    <div class="d-flex justify-content-end">
+      <span class="menu-order-icon-span me-2" id="QRCode"><img src="~/images/icons/qr-code-scan.svg" alt="QRcode"
+          style="margin-top: -3px;" class="menu-order-icon"></span>
+
+      <span class="menu-order-icon-span me-2 d-flex align-items-center" id="customer-detail">
+        <img src="~/images/icons/user-line.svg" alt="userDetail" class="menu-order-icon">
+      </span>
+
+      <span class="menu-order-icon-span"><img src="~/images/icons/review.svg" alt="OrderComment" id="orderComment"
+          class="menu-order-icon"></span>
+    </div>
+  </div>
+</div>
+
+<div id="OrderItemPartial" class="">
+  @* order item *@
+  <div class="d-flex fw-medium mt-3 mb-2">
+    <div class="col-5 text-start">Item
+    </div>
+    <div class="col-4 text-start">Quantity</div>
+    <div class="col-3 text-start">Amount</div>
+  </div>
+
+  <div id="OrderItemListContainer" class="overflow-x-auto" style="height: 300px;">
+    @foreach (var item in Model.OrderItems)
+    {
+      <div
+        class="d-flex justify-content-between align-items-center shadow-sm rounded-2 border border-2 p-2 my-2 order-item-card item-comment"
+        data-id="@item.Id">
+        <div class="text-start col-5">
+          <div class="accordion accordion-flush shadow-none" id="accordionFlushExample">
+            <div class="accordion-item">
+              <h2 class="accordion-header itemDetail" id="flush-headingOne">
+                @* @{
+                var uniqueId = item.Id + string.Join("", item.Modifiers?.Select(m => m.Id) ?? Enumerable.Empty<int>());
+              } *@
+                <button class="accordion-button collapsed fw-bold p-0" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#@item.Id" aria-expanded="false" aria-controls="@item.Id">
+                  @item.Name
+                </button>
+
+              </h2>
+              <div id="@item.Id" class="accordion-collapse collapse" aria-labelledby="flush-headingOne"
+                data-bs-parent="#accordionFlushExample">
+                <div class="accordion-body p-0">
+                  <ul class="mb-0">
+                    @foreach (var m in item.Modifiers)
+                    {
+                      <li>@m.Name</li>
+                    }
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-4 text-center">
+          <div class="">
+            <div class="col-12 d-flex justify-content-start">
+              <div class="quantity">
+                <button class="minus" aria-label="Decrease" @(item.Quantity == 1 ? "disabled" : "")
+                  data-id="@item.Id">&minus;</button>
+                <input type="number" class="input-box p-1" value="@item.Quantity" min="1" data-id="@item.Menuitemid"
+                  readonly />
+                <button class="plus" aria-label="Increase">&plus;</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-3 text-left d-flex justify-content-between">
+
+          <div class="d-flex justify-content-start align-items-center">
+            <div class="d-flex flex-column text-black">
+              <span class="fw-medium fs-5 item-rate" value="@item.Rate" data-id="@item.Menuitemid">₹@item.Amount</span>
+              <span class="modifier-rate" style="font-size: smaller;" value="@item.Modifiers.Sum(m => m.Rate)">₹
+                @item.TotalModifierAmount</span>
+            </div>
+          </div>
+
+          <div class="">
+            <button class="btn border-0 delete-order-item" data-id="@item.Id" data-uniqid="null">
+              <i class="fa-regular fa-trash-can"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <hr>
+  <div>
+    <div class="d-flex justify-content-between">
+      <span class="fw-bold">Sub Total</span>
+      <span class="fw-medium ">₹ <span><span id="subTotal">@Model.SubtotalAmount</span>
+    </div>
+    @foreach (var t in Model.OrderTax)
+    {
+      if (t.IsDefault == true)
+      {
+        <div class="d-flex justify-content-between">
+          <span class="fw-medium">@t.Name</span>
+          <span class="fw-medium order-tax-@t.Id">₹ @t.Taxvalue</span>
+        </div>
+      }
+    }
+    @foreach (var t in Model.OrderTax)
+    {
+      if(t.IsDefault == false)
+      {
+        <div class="d-flex justify-content-between">
+          <span>
+            <input type="checkbox" class="form-check-input tax-checkbox order-tax-checkbox-@t.Id"  @(t.Taxvalue > 0 ? "checked" : "") />
+            <span class="ms-2 fw-medium ">@t.Name</span>
+          </span>
+          <span class="order-tax-sgst fw-medium order-tax-@t.Id">@t.Taxvalue</span>
+        </div>
+      }
+    }
+    @* <div class="d-flex justify-content-between">
+      <span>
+        <input type="checkbox" class="form-check-input" id="isSGSTInput" @(Model.IsSGSTSeclected == true ? "checked" : "" ) />
+        <span class="ms-2 fw-medium ">SGST</span>
+      </span>
+      <span class="order-tax-sgst fw-medium"></span>
+    </div> *@
+
+    <div class="d-flex justify-content-between">
+      <span class="fw-bold">Total</span>
+      <span class="fw-medium" id="total">₹ @Model.TotalAmount</span>
+    </div>
+    <div class="row mx-0 px-0">
+      <div class="col px-0">
+        Payment Method
+      </div>
+      <div class="col d-flex justify-content-end px-0">
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="flexRadioDisabled" id="flexRadioDisabled" checked disabled>
+          <label class="form-check-label" for="flexRadioDisabled">
+            Cash
+          </label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="flexRadioDisabled" id="flexRadioDisabled" disabled>
+          <label class="form-check-label" for="flexRadioDisabled">
+            Card
+          </label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="flexRadioDisabled" id="flexRadioDisabled" disabled>
+          <label class="form-check-label" for="flexRadioDisabled">
+            UPI
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+  @* order item end *@
+  <div class="d-flex gap-2 flex-wrap justify-content-end my-2">
+    <button class="btn btn-primary px-lg-5" id="SaveOrder">Save</button>
+    <button class="btn btn-outline-primary px-lg-4" id="completeOrder">Complete</button>
+    <button class="btn btn-outline-primary" id="generateInvoice">Generate Invoice</button>
+  </div>
+  <div class="d-flex justify-content-end">
+    <button class="btn btn-outline-primary px-lg-4" id="cancelOrder">Cancel</button>
+  </div>
+</div>
+@* </div> *@
+
+<script>
+  $(document).ready(function () {
+    // Event handler for the checkbox
+    orderDetails = @Html.Raw(Json.Serialize(Model));
+    OrderItems =@Html.Raw(Json.Serialize(Model.OrderItems));
+    SubTotal = orderDetails?.subtotalAmount;
+    Total = orderDetails?.totalAmount;
+    Taxes = orderDetails?.orderTax;
+    ExistItemCount = OrderItems.length;
+    console.log("orderItems", OrderItems);
+    console.log("OrderDetails", orderDetails);
+
+    if (ExistItemCount == 0) {
+      $("#generateInvoice").attr('disabled', true);
+      $("#completeOrder").attr('disabled', true);
+    }
+  });
+
+  $(document).on("click", "#completeOrder", function () {
+    if (OrderItems.length > ExistItemCount && ExistItemCount > 0) {
+      toastr.error("Please save the order.");
+      return;
+    }
+    $("#completeOrderModal").modal('show');
+  })
+
+  $(document).on("click", "#confirmCompleteBtn", function () {
+    $.ajax({
+      type: "POST",
+      url: '@Url.Action("CompleteOrder", "MenuOrderApp")',
+      data: { id: orderDetails.id },
+      success: async function (response) {
+        if (response.success) {
+          toastr.success(response.message);
+          $("#completeOrderModal").modal('hide');
+          $("#CustomerRatingModal").modal('show');
+        } else {
+          toastr.error(response.message);
+        }
+      },
+      error: function (xhr, status, error) {
+        toastr.error(error.message);
+      }
+    });
+  })
+
+  //Cancel Order 
+  $(document).on('click', '#cancelOrder', function () {
+    $("#cancelOrderModal").modal('show');
+  });
+
+  $(document).on("click", "#confirmCancelOrderBtn", function () {
+    var id = orderDetails.id;
+    $.ajax({
+      type: "POST",
+      url: '@Url.Action("CancelOrder", "MenuOrderApp")',
+      data: { id: id },
+      success: async function (response) {
+        if (response.success) {
+          console.log("Save");
+          toastr.success(response.message);
+          window.location.href = "/TableOrderApp/Index"
+        } else {
+          toastr.error(response.message);
+        }
+      },
+      error: function (xhr, status, error) {
+        console.error(error);
+      }
+    });
+  })
+</script>

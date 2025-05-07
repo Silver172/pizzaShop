@@ -1,0 +1,124 @@
+@model PizzaShop.DataAccess.ViewModels.CustomerPageViewModel
+@{
+    var PageSize = Model.Pagination.PageSize;
+    var PageIndex = Model.Pagination.PageIndex;
+    var TotalPage = Model.Pagination.TotalPage;
+    var SearchString = Model.Pagination.SearchString;
+    var TotalRecord = Model.Pagination.TotalRecord;
+}
+
+<div class="shadow card px-3">
+    <section class="table-responsive">
+        <table class="table table-hover user-table mb-0">
+            <thead>
+                <tr>
+                    <th scope="col" class="d-flex align-items-center text-start">Name
+                        <i class="fa-solid fa-arrow-up mx-1 cursor-pointer sorting" data-type="ascending"
+                            data-name="Name"></i>
+                        <i class="fa-solid fa-arrow-down cursor-pointer sorting" data-type="descending"
+                            data-name="Name"></i>
+                    </th>
+                    <th scope="col" class="text-left">
+                        <div class="d-flex align-items-center justify-content-start">Email
+                        </div>
+                    </th>
+                    <th scope="col" class="text-left">Phone Number</th>
+                    <th scope="col" class="text-center">
+                        <div class="d-flex align-items-center justify-content-start">Date
+                            <i class="fa-solid fa-arrow-up mx-1 cursor-pointer sorting" data-type="ascending"
+                                data-name="Date"></i>
+                            <i class="fa-solid fa-arrow-down cursor-pointer sorting" data-type="descending"
+                                data-name="Date"></i>
+                        </div>
+                    </th>
+
+                    <th scope="col" class="">
+                        <div class="d-flex justify-content-center align-items-center">
+                            <span >Total Order</span>
+                            <i class="fa-solid fa-arrow-up mx-1 cursor-pointer sorting" data-type="ascending"
+                                data-name="TotalOrder"></i>
+                            <i class="fa-solid fa-arrow-down cursor-pointer sorting" data-type="descending"
+                                data-name="TotalOrder"></i>
+                        </div>
+                    </th>
+                </tr>
+            </thead>
+
+            <tbody class="table-group-devider">
+                @if (@Model.CustomerList.Count() == 0)
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-secondary">No Customers Found</td>
+                    </tr>
+                }
+                @foreach (var c in @Model.CustomerList)
+                {
+                    <tr class="customerRow" data-id="@c.Id">
+                        <td scope="col" class="d-flex align-items-center text-start">@c.Name
+                        </td>
+                        <td scope="col" class="text-left">
+                            <div class="d-flex align-items-center justify-content-start">@c.Email
+                            </div>
+                        </td>
+                        <td scope="col" class="text-left">@c.Phone</td>
+                        <td scope="col" class="text-center">
+                            <div class="d-flex align-items-center justify-content-start">@c.Date
+                            </div>
+                        </td>
+
+                        <td scope="col" class="">
+                            <div class="d-flex justify-content-center align-items-center">
+                                <span class="text-center" style="width: 120px !important;">@c.TotalOrders</span>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+    <div class="d-flex justify-content-end justify-content-sm-end align-items-center my-2 p-2">
+        <p class="mb-0 d-none d-md-block fs-6">Items Per page</p>
+        <select class="mx-2 cursor-pointer" aria-label="Default select example" id="customerPageSize" onchange="customerPageSize(@PageSize)">
+            <option value="5" selected="@(PageSize == 5 ? true : false)">5</option>
+            <option value="10" selected="@(PageSize == 10 ? true : false)">10</option>
+            <option value="15" selected="@(PageSize == 15 ? true : false)">15</option>
+        </select>
+
+        <span class="mb-0 ms-2 me-2 d-none d-md-block" id="showing">Showing @(Math.Min(((PageIndex - 1) * PageSize) + 1,
+            TotalRecord)) -
+            @(Math.Min(PageIndex * PageSize, TotalRecord)) of @TotalRecord</span>
+        @if (PageIndex > 1)
+                {
+        <span class="btn btn-outline-secondary me-1 px-3 py-0" name="PageIndex" id="PreviousCustomers">
+            <i class="fa-solid fa-less-than fa-sm"></i>
+        </span>
+                }
+                else
+        {
+            <button class="btn btn-outline-secondary me-1 px-3 py-0" name="PageIndex" disabled>
+                <i class="fa-solid fa-less-than fa-sm"></i>
+            </button>
+        }
+
+        @if (PageIndex < TotalPage)
+        {
+            <a class="btn btn-outline-secondary px-3 py-0" name="PageIndex" id="NextCustomers">
+                <i class="fa-solid fa-greater-than fa-sm"></i>
+            </a>
+        }
+        else
+        {
+            <button class="btn btn-outline-secondary px-3 py-0" name="PageIndex" disabled>
+                <i class="fa-solid fa-greater-than fa-sm"></i>
+            </button>
+        }
+    </div>
+</div>
+
+<div id="customerHistoryContainer">
+</div>
+
+
+<script>
+    var CustomerPageIndex = @PageIndex
+</script>

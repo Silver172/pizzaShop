@@ -1,0 +1,194 @@
+@model PizzaShop.DataAccess.ViewModels.UserPageViewModel;
+@using Newtonsoft.Json;
+@using PizzaShop.ViewModels
+
+@inject IHttpContextAccessor Accessor
+@{
+    var permission =
+    JsonConvert.DeserializeObject<List<ManageRolePermissioinViewModel>>(Accessor.HttpContext.Session.GetString("permission"));
+}
+@{
+    var PageSize = Model.Pagination.PageSize;
+    var PageIndex = Model.Pagination.PageIndex;
+    var TotalPage = Model.Pagination.TotalPage;
+    var SearchString = Model.Pagination.SearchString;
+    var TotalRecord = Model.Pagination.TotalRecord;
+}
+
+<div class=" shadow card">
+    <section class="table-responsive">
+        <table class="table table-hover user-table mb-0">
+            <thead>
+                <tr>
+                    <th scope="col">
+                        Name
+                        <i class="fa-solid fa-arrow-up cursor-pointer sorting" data-type="ascending"
+                            data-name="Name"></i>
+                        <i class="fa-solid fa-arrow-down cursor-pointer sorting" data-type="descending"
+                            data-name="Name"></i>
+                    </th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Phone</th>
+                    <th scope="col">
+                        Role
+                        <i class="fa-solid fa-arrow-up cursor-pointer sorting" data-type="ascending"
+                            data-name="Role"></i>
+                        <i class="fa-solid fa-arrow-down cursor-pointer sorting" data-type="descending"
+                            data-name="Role"></i>
+                    </th>
+                    <th scope="col">Status</th>
+                    <th scope="col"
+                        class="text-center d-@(permission[0].Canaddedit == false && permission[0].Candelete == false ? "none" : "")">
+                        Action</th>
+                </tr>
+            </thead>
+            <tbody class="table-group-devider">
+                @if (@Model.UserList.Count() == 0)
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-secondary">No Users Found</td>
+                    </tr>
+                }
+                @foreach (var user in @Model.UserList)
+                {
+                    <tr>
+                        <th scope="row">
+                            <div class="d-flex align-items-center gap-3">
+                                <img src="~/images/@(user.Profileimage != null ? user.Profileimage : "Default_pfp.svg.png")"
+                                    alt="user-icon" class="user-icon rounded-circle" />
+                                @user.Firstname @user.Lastname
+                            </div>
+                        </th>
+                        <td>@user.Email</td>
+                        <td>@user.Phone</td>
+                        <td>@user.Role</td>
+                        <td>
+                            @if (@user.Isactive == "Active")
+                            {
+                                <p class="user-active">@user.Isactive </p>
+                            }
+                            else
+                            {
+                                <p class="user-inactive">@user.Isactive </p>
+                            }
+
+                        </td>
+                        <td
+                            class="d-@(permission[0].Canaddedit == false && permission[0].Candelete == false ? "none" : "")">
+                            <div class="d-flex justify-content-center align-items-center">
+                                <button class="btn border-0 p-0">
+                                    <a href="@Url.Action("UpdateUser", "Users", new { Id = user.Id })"
+                                        style="text-decoration: none; color: black; display : @(permission[0].Canaddedit == false ? "none" : "")"><i
+                                            class="fa-solid fa-pen"></i>
+                                    </a>
+                                </button>
+                                <button type="button" class="btn border-0 p-">
+                                    <i class="fa fa-trash-can" data-userid="@user.Id" data-bs-toggle="modal"
+                                        data-bs-target="#deleteModal"
+                                        style="cursor: pointer;display : @(permission[0].Candelete == false ? "none" : "")"></i>
+                                </button>
+                            </div>
+
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+    <div class="d-flex justify-content-end justify-content-sm-end align-items-center mt-2 p-2">
+        <p class="mb-0 d-none d-md-block fs-6">Items Per page</p>
+        <select class="mx-2 cursor-pointer" aria-label="Default select example" id="userPageSize">
+            <option value="5" selected="@(PageSize == 5 ? true : false)">5</option>
+            <option value="10" selected="@(PageSize == 10 ? true : false)">10</option>
+            <option value="15" selected="@(PageSize == 15 ? true : false)">15</option>
+        </select>
+
+        <span class="mb-0 ms-2 me-2 d-none d-md-block" id="showing">Showing @(Math.Min(((PageIndex - 1) * PageSize) + 1,
+                        TotalRecord)) -
+            @(Math.Min(PageIndex * PageSize, TotalRecord)) of @TotalRecord</span>
+        @if (PageIndex > 1)
+        {
+            <span class="btn btn-outline-secondary me-1 px-3 py-0" name="PageIndex" id="PreviousUsers">
+                <i class="fa-solid fa-less-than fa-sm"></i>
+            </span>
+        }
+        else
+        {
+            <button class="btn btn-outline-secondary me-1 px-3 py-0" name="PageIndex" disabled>
+                <i class="fa-solid fa-less-than fa-sm"></i>
+            </button>
+        }
+
+        @if (PageIndex < TotalPage)
+        {
+            <a class="btn btn-outline-secondary px-3 py-0" name="PageIndex" id="NextUser">
+                <i class="fa-solid fa-greater-than fa-sm"></i>
+            </a>
+        }
+        else
+        {
+            <button class="btn btn-outline-secondary px-3 py-0" name="PageIndex" disabled>
+                <i class="fa-solid fa-greater-than fa-sm"></i>
+            </button>
+        }
+    </div>
+</div>
+
+
+<script>
+    var userPageIndex = @PageIndex;
+    var AjaxReq;
+    var deleteTableId;
+
+    @* var debounceTimer *@
+        function GetFilteredUsers() {
+            var SearchString = $("#searchUser").val();
+            var pageSize = $("#userPageSize").val();
+
+            if (AjaxReq && AjaxReq.readyState !== 4)
+                AjaxReq.abort();
+
+            AjaxReq = $.ajax({
+                url: "/Users/GetUsers",
+                type: "GET",
+                data: {
+                    pageIndex: userPageIndex,
+                    pageSize: pageSize,
+                    searchString: SearchString,
+                    sortBy: SortBy,
+                    sortType: SortType
+                },
+                success: function (data) {
+                    $("#userListContainer").html(data);
+                }
+            })
+        }
+
+
+    $('#userPageSize').change(function () {
+        var pageSize = @PageSize
+        userPageIndex = 1
+        GetFilteredUsers();
+    })
+
+    $('#searchUser').keyup(function () {
+        clearTimeout(debounceTimer);
+        userPageIndex = 1
+        pageSize = @PageSize
+
+            debounceTimer = setTimeout(() => {
+                GetFilteredUsers();
+            }, 400)
+    })
+
+    $("#PreviousUsers").click(function () {
+        userPageIndex -= 1;
+        GetFilteredUsers()
+    })
+
+    $('#NextUser').click(function () {
+        $("#PreviousBtn").attr('disabled', false)
+        userPageIndex += 1;
+        GetFilteredUsers()
+    })
+</script>

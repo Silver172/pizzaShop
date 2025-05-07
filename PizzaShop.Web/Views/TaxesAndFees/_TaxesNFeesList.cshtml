@@ -1,0 +1,239 @@
+@model PizzaShop.DataAccess.ViewModels.TaxesAndFeesPageViewModel;
+@inject IHttpContextAccessor Accessor;
+@using Newtonsoft.Json;
+@using PizzaShop.ViewModels;
+@{
+    var PageSize = Model.Pagination.PageSize;
+    var PageIndex = Model.Pagination.PageIndex;
+    var TotalPage = Model.Pagination.TotalPage;
+    var SearchString = Model.Pagination.SearchString;
+    var TotalRecord = Model.Pagination.TotalRecord;
+    var permission = JsonConvert.DeserializeObject<List<ManageRolePermissioinViewModel>>(Accessor.HttpContext.Session.GetString("permission"));
+}
+
+<div class=" shadow card">
+    <section class="table-responsive">
+        <table class="table table-hover user-table mb-0">
+            <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">IsEnabled</th>
+                    <th scope="col">Default</th>
+                    <th scope="col">Tax Value</th>
+                    <th scope="col" class="d-@(permission[4].Canaddedit == false && permission[4].Candelete == false ? "none" : "")">Action</th>
+                </tr>
+            </thead>
+            <tbody class="table-group-devider">
+                @if (@Model.TaxesAndFeesList.Count() == 0)
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-secondary">No Tables Found</td>
+                    </tr>
+                }
+                @foreach (var tf in @Model.TaxesAndFeesList)
+                {
+                    <tr>
+                        <th scope="row">@tf.Name</th>
+                        <td>@if(tf.Flatamount == null)
+                                {<span>Percentage</span>}
+                            else
+                            {<span>Flat Amount</span>}
+                        </td>
+                        <td><div class="form-check form-switch">
+                                <input class="form-check-input " type="checkbox" role="switch"  disabled
+                                    checked="@tf.Isactive" />
+                            </div></td>
+                        <td>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input " type="checkbox" role="switch" disabled
+                                    checked="@tf.Isdefault" />
+                            </div>
+                        </td>
+                        <td>
+                            @if (@tf.Flatamount != null)
+                            {
+                                <span>&#8377</span> @tf.Flatamount 
+                            }
+                            else
+                            {
+                                @tf.Percentge <span>%</span>
+                            }
+                        </td>
+                        <td class="d-@(permission[4].Canaddedit == false && permission[4].Candelete == false ? "none" : "")">
+                            <button type="button" class="btn p-0 border-0 editTnFBtn d-@(permission[4].Canaddedit == false ? "none" : "")" value="@tf.Id">
+                                <i class="fa-solid fa-pen me-3"></i>
+                            </button>
+                            <button type="button" class="btn p-0 border-0 deleteTnFBtn d-@(permission[4].Candelete == false ? "none" : "")" value="@tf.Id">
+                                <i class="fa-regular fa-trash-can"></i>
+                            </button>
+
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+    <div class="d-flex justify-content-end justify-content-sm-end align-items-center mt-2 p-2">
+        <p class="mb-0 d-none d-md-block fs-6">Items Per page</p>
+        <select class="mx-2 cursor-pointer" aria-label="Default select example" id="TaxPageSize">
+            <option value="5" selected="@(PageSize == 5 ? true : false)">5</option>
+            <option value="10" selected="@(PageSize == 10 ? true : false)">10</option>
+            <option value="15" selected="@(PageSize == 15 ? true : false)">15</option>
+        </select>
+
+        <span class="mb-0 ms-2 me-2 d-none d-md-block" id="showing">Showing @(Math.Min(((PageIndex - 1) * PageSize) + 1,
+            TotalRecord)) -
+            @(Math.Min(PageIndex * PageSize, TotalRecord)) of @TotalRecord</span>
+        @if (PageIndex > 1)
+                {
+        <span class="btn btn-outline-secondary me-1 px-3 py-0" name="PageIndex" id="PreviousTax">
+            <i class="fa-solid fa-less-than fa-sm"></i>
+        </span>
+                }
+                else
+        {
+            <button class="btn btn-outline-secondary me-1 px-3 py-0" name="PageIndex" disabled>
+                <i class="fa-solid fa-less-than fa-sm"></i>
+            </button>
+        }
+
+        @if (PageIndex < TotalPage)
+        {
+            <a class="btn btn-outline-secondary px-3 py-0" name="PageIndex" id="NextTax">
+                <i class="fa-solid fa-greater-than fa-sm"></i>
+            </a>
+        }
+        else
+        {
+            <button class="btn btn-outline-secondary px-3 py-0" name="PageIndex" disabled>
+                <i class="fa-solid fa-greater-than fa-sm"></i>
+            </button>
+        }
+    </div>
+</div>
+
+
+<div class="modal fade" id="deleteTaxModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Delete Confirmation</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="text-center">
+                <i class="fa-solid fa-triangle-exclamation fa-2xl" style="color: #FFD43B;"></i>
+            </div>
+            <div class="modal-body text-center p-1">
+                <p class="fw-bold mb-0">Are you sure you want to delete this tax?</p>
+            </div>
+            <div class="modal-footer d-flex justify-content-center border-0">
+                <button type="button" class="btn btn-primary" id="confirmDeleteTaxBtn">Yes</button>
+                <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">No</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var TaxId;
+    var DeleteTaxId;
+    var taxPageIndex = @PageIndex;
+    var taxAjaxReq;
+    function GetFilteredTaxes() {
+            var SearchString = $("#searchTnf").val();
+            var pageSize = $("#TaxPageSize").val();
+
+            if (taxAjaxReq && taxAjaxReq.readyState !== 4)
+                taxAjaxReq.abort();
+
+            taxAjaxReq = $.ajax({
+                url: "/TaxesAndFees/GetTaxesAndFees",
+                type: "GET",
+                data: {
+                    pageIndex: taxPageIndex,
+                    pageSize: pageSize,
+                    searchString: SearchString
+                },
+                success: function (data) {
+                    $("#taxListContainer").html(data);
+                }
+            })
+        }
+
+
+    $('#TaxPageSize').change(function () {
+        var pageSize = @PageSize
+        var pageIndex = 1
+        GetFilteredTaxes();
+    })
+
+    $('#searchTnf').keyup(function () {
+        clearTimeout(debounceTimer);
+        taxPageIndex = 1
+        pageSize = @PageSize
+
+            debounceTimer = setTimeout(() => {
+                GetFilteredTaxes();
+            }, 400)
+    })
+
+    $("#PreviousTax").click(function () {
+        taxPageIndex -= 1;
+        GetFilteredTaxes()
+    })
+
+    $('#NextTax').click(function () {
+        $("#PreviousBtn").attr('disabled', false)
+        taxPageIndex += 1;
+        GetFilteredTaxes()
+    })
+
+
+
+    $(".editTnFBtn").click(function(){
+        TaxId = $(this).val();
+
+        $.ajax({
+            url: "/TaxesAndFees/AddEditTax",
+            type: "GET",
+            data: {id: TaxId},
+            success: function (response) {
+                $("#addEditTaxContainer").html(response);
+                $("#addEditTaxModal").modal('show');
+            },
+            error: function(error)
+            {
+                toastr.error(error.message);
+            }
+        })
+    })
+
+    $(".deleteTnFBtn").click(function(){
+        DeleteTaxId = $(this).val();
+        $("#deleteTaxModal").modal('show');
+    })
+
+    $("#confirmDeleteTaxBtn").click(function(){
+        $.ajax({
+             url: "/TaxesAndFees/DeleteTax",
+            type: "POST",
+            data: {id: DeleteTaxId},
+            success: function (response) {
+                if(response.isSuccess)
+                 {
+                    toastr.success(response.message);
+                    $("#deleteTaxModal").modal('hide');
+                    GetFilteredTaxes();
+                 }
+                toastr.error(response.message);
+            },
+            error: function(error){
+                toastr.error(error.message);
+            }
+        })
+    })
+
+    $("")
+</script>

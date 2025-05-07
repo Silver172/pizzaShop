@@ -1,0 +1,56 @@
+@model PizzaShop.DataAccess.ViewModels.OrderAppKOTViewModel;
+
+@if (Model.ListKotContent.Count() > 0)
+{
+
+    @foreach (var k in Model.ListKotContent)
+    {
+        <div class="kot-card" data-id='@Html.Raw(Json.Serialize(k))'>
+            <div class="kot-card-header">
+                <div class="row" style="font-size: 12px;">
+                    <p class="col-2 textBlue fw-bold mb-0">#@k.OrderId</p>
+                    <p class="col-10 mb-0"><i class="fa-solid fa-stopwatch" style="color: #a3a3a3;"></i>@k.OrderDuration</p>
+                </div>
+                <div class="text-start">
+                    @k.Section - @foreach(var i in @k.Tables){
+                    @i
+                    <span>,</span>
+                }
+            </div>
+        </div>
+        <div class="kot-card-body">
+            @if (@k.OrderItems.Count() == 0)
+            {
+                <tr>
+                    <td colspan="7" class="text-center text-secondary">No Items Ordered</td>
+                </tr>
+            }
+            else
+            {
+                @foreach (var i in @k.OrderItems)
+                {
+                    <div class="row mx-0">
+                        <p class="col text-start mb-0">@i.Name</p>
+                        <p class="col text-end mb-0">@i.Quantity</p>
+                    </div>
+                    <ul>
+                        @foreach (var m in i.Modifiers)
+                        {
+                            <li class="text-start">@m.Name</li>
+                        }
+                    </ul>
+                }
+            }
+        </div>
+        <div class="kot-card-footer">
+            <p class="mb-0 text-start"><span class="text-info fw-bold">Order Instruction: </span>@k.Notes</p>
+        </div>
+    </div>
+}
+
+}else
+{
+    <div class="text-center"> No Orders Found</div>
+}
+
+<div id="tableData"></div>

@@ -1,0 +1,230 @@
+@{
+  ViewData["Title"] = "Menu Order App";
+  Layout = "_OrderAppLayout";
+}
+
+@model PizzaShop.DataAccess.ViewModels.MenuOrderAppViewModel;
+<div class="d-flex remove-space">
+  <div class="bg-white d-none d-lg-block col-3 col-lg-2" style="height: 92vh;">
+    <div class="d-flex flex-column gap-2">
+      <h3 class="pt-3 ps-4" style="font-weight: 650;">Category</h3>
+      <div data-id="-1"  class="ps-4 cursor-pointer menu-category py-1 fs-6 fw-medium">
+        Favourite Items
+      </div>
+      <div data-id="0" class="ps-4 cursor-pointer py-1 menu-category active-kot-sidebar-item fs-6 fw-medium">
+        All
+      </div>
+      @if(Model.CategoriesList.Count() > 0)
+      {
+        foreach (var c in Model.CategoriesList)
+        {
+          <div data-id="@c.Id" class="ps-4 cursor-pointer py-1 menu-category fs-6 fw-medium" >
+            @c.Name
+          </div>
+        }
+      }
+      else
+      {
+        <div class="ps-4 cursor-pointer py-1" >
+          No Categories Available
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="w-100" style="height: 92vh;">
+    <div class="ps-3 pt-3 " id="MenuItemsPartial">
+      <partial name="_MenuContent" model="Model" />
+    </div>
+  </div>
+</div>
+
+
+@* Category offcanvas *@
+<div class="offcanvas offcanvas-start" tabindex="-1" id="categoryOffcanvas" aria-labelledby="offcanvasExampleLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title fw-bold fs-3" id="offcanvasExampleLabel">Category</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+    <div class="d-flex flex-column gap-2">
+      <div id="category-kot-favourite" class="ps-4 cursor-pointer py-1" style="font-size: large;">
+        Favourite Items
+      </div>
+      <div id="category-kot-all" class="ps-4 cursor-pointer py-1 active-kot-sidebar-item" style="font-size: large;">
+        All
+      </div>
+      @if(Model.CategoriesList.Count() > 0)
+      {
+        foreach (var c in Model.CategoriesList)
+        {
+          <div data-id="@c.Id" class="ps-4 cursor-pointer py-1 menuOrderApp-category fs-6 fw-medium" >
+            @c.Name
+          </div>
+        }
+      }
+      else
+      {
+        <div class="ps-4 cursor-pointer py-1" >
+          No Categories Available
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+
+
+@* complete order modal *@
+<div class="modal fade" id="CompleteOrderModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+  aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="staticBackdropLabel">Complete Confirmation</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body d-flex flex-column align-items-center justify-content-center">
+        <img src="~/images/toppng.com-warning-icon-2400x2400.png" alt="alert-icon" id="alert-icon" />
+        <p>Are you sure you want to complete this order?</p>
+      </div>
+      <div class="modal-footer">
+        <button id="completeOrderButton" type="button" class="btn btn-primary px-3">Yes</button>
+        <a data-bs-dismiss="modal"><button type="button" class="btn btn-contrast px-3">No</button></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+@* customer rating modal *@
+<div class="modal fade" id="CustomerRatingModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+  aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered customer-review-modal-width">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addTaxModalTitle">Customer Review
+        </h5>
+        <button onclick="" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="d-flex flex-column">
+          <div class="d-flex justify-content-between align-items-center">
+            <p class="font-weight-bold-slight">Food</p>
+            <div class="d-flex gap-1">
+              @for (int i = 1; i <= 5; i++)
+              {
+                var emptyId = "emptyStar-food-" + i;
+                var filledId = "filledStar-food-" + i;
+                @* <img id="@emptyId" src="~/images/icons/star.svg" class="small-image star-empty star food">
+                <img id="@filledId" src="~/images/icons/star-filled.svg" class="small-image d-none star-filled star food"> *@
+              }
+            </div>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <p class="font-weight-bold-slight">Service</p>
+            <div class="d-flex gap-1">
+              @for (int i = 1; i <= 5; i++)
+              {
+                var emptyId = "emptyStar-service-" + i;
+                var filledId = "filledStar-service-" + i;
+                @* <img id="@emptyId" src="~/images/icons/star.svg" class="small-image star-empty star service">
+                <img id="@filledId" src="~/images/icons/star-filled.svg"
+                  class="small-image d-none star-filled star service"> *@
+              }
+            </div>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <p class="font-weight-bold-slight">Ambience</p>
+            <div class="d-flex gap-1">
+              @for (int i = 1; i <= 5; i++)
+              {
+                var emptyId = "emptyStar-ambience-" + i;
+                var filledId = "filledStar-ambience-" + i;
+                @* <img id="@emptyId" src="~/images/icons/star.svg" class="small-image star-empty star ambience">
+                <img id="@filledId" src="~/images/icons/star-filled.svg"
+                  class="small-image d-none star-filled star ambience"> *@
+              }
+            </div>
+          </div>
+        </div>
+        <div class="col-12 row mt-3">
+          <div class="form-floating my-auto col-12">
+            <textarea class="form-control" placeholder="Leave a comment here" id="orderReviewByCustomer"
+              style="height: 100px"></textarea>
+            <label for="floatingTextarea2">Comments</label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer d-flex justify-content-end ">
+        <button type="submit" id="AddTableButton" onclick="saveCustomerReview()" type="button"
+          class="btn btn-primary px-3">Save</button>
+        <a onclick="" data-bs-dismiss="modal"><button type="button" class="btn btn-contrast px-3">No</button></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+@* OrderWise Comment *@
+@* <div class="modal fade" id="OrderwiseCommentModal" tabindex="-1" aria-labelledby="staticBackdropLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered customer-review-modal-width">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-secondary">Order Wise Comments</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mt-3">
+                    <div class="form-floating col-12">
+                        <textarea class="form-control" placeholder="Leave a comment here"
+                            data-id="@Model.OrderDetails!.OrderId" id="orderCumments" style="height: 100px"></textarea>
+                        <label for="orderReviewByCustomer" class="ms-2">Comments</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer d-flex justify-content-end">
+                <button type="button" class="fill-btn px-3" id="saveOrderComment">Save</button>
+                <button type="button" class="outline-btn px-3" data-bs-dismiss="modal">No</button>
+            </div>
+        </div>
+    </div>
+</div> *@
+
+
+@section Scripts {
+        @Html.Partial("_ValidationScriptsPartial")
+    }
+<script>
+  var categoryId = 0;
+  function GetMenuItems(){
+    $.ajax({
+      type: "GET",
+      url: '@Url.Action("GetItemsByCategoryId", "MenuOrderApp")',
+      data: { 
+        cId: categoryId,
+        searchString : $("#searchOrderItems").val()
+      },
+      success: function (response) {
+        $("#menuItemListDiv").html(response);
+      },
+      error: function (xhr, status, error) {
+        console.error("Error fetching menu items:", error);
+      }
+    });
+  }
+
+  $(".menu-category").click(function () {
+    categoryId = $(this).data("id");
+    $(".menu-category").removeClass("active-kot-sidebar-item");
+    $(this).addClass("active-kot-sidebar-item");
+    $("#searchOrderItems").val('');
+    GetMenuItems();
+  });
+
+  $("#searchOrderItems").keyup(function(){
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(function(){
+      GetMenuItems();
+    }, 400);
+  })
+</script>

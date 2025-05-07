@@ -1,0 +1,93 @@
+@model PizzaShop.DataAccess.ViewModels.CustomerPageViewModel;
+@{
+    ViewData["Title"] = "Index";
+    var PageSize = Model.Pagination.PageSize;
+    var PageIndex = Model.Pagination.PageIndex;
+    var TotalPage = Model.Pagination.TotalPage;
+    var SearchString = Model.Pagination.SearchString;
+    var TotalRecord = Model.Pagination.TotalRecord;
+    var StatusDropDown = new List<string>{"All Status","Pending", "In Progress", "Served", "Completed", "Cancelled", "On Hold", "Failed"};
+    var TimeDropDown = new List<String>{"All Time","Last 7 days", "Last 30 days",  "Current Month", "Select Date Range"};
+}
+
+
+<div class="row my-2 customerHeader">
+    <div class="row my-1 mx-1">
+        <div class="col-lg-3 col-12 d-flex justify-content-xl-start justify-content-center">
+            <h2 class="pageHeading textBlue">Customers</h2>
+        </div>
+
+        <div class="col-lg-9 mb-2 col-12 px-0">
+            <div class="row">
+                <div class="col-md-4"></div>
+                <div class="col-md-3 col-12">
+                    <input type="text" class="form-control" id="searchCustomer" placeholder="Search" onkeyup="searchCustomer(@PageSize)" />
+                </div>
+
+                <div class="col-md-3 col-6 mt-md-0 mt-md-0 mt-2">
+                    <select name="" id="timeDropDown" class="form-control form-select " onfocus="this.selectedIndex=''">
+                        <option value='' hidden>Select date filter</option>
+                        @foreach (var i in TimeDropDown)
+                        {
+                            <option value=@i>@i</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2 col-6 mt-md-0 mt-2">
+                    <button type="button" class="btn btn-primary w-100" id="ExportToExcel">
+                        <span><i class="fa-solid fa-share-from-square me-1"></i></span>
+                        <span>Export</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="OrderListContainer">
+    @Html.Partial("_CustomerList",Model)
+</div>
+
+<div class="modal fade" id="DateRangeModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Select Date Range</h1>
+                <button type="button" class="btn-close closeDateRangeModal" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-1 mt-3">
+                <form id="DateRangeForm" onsubmit="return false">
+                <div class="row mx-1 d-flex">
+                    <div class="col-md-6 col-12">
+                        <div class=" form-floating">
+                        <input type="date" name="FromDate" class="form-control" placeholder="Start Date" id="FromDate" required/>
+                        <label for="Start Date" class="">Start Date</label>
+                        <span class="text-danger error"></span>
+                    </div>
+                    </div>
+                    <div class="col-md-6 col-12">
+                        <div class=" form-floating ">
+                        <input type="date" name="ToDate" class="form-control" placeholder="End Date" id="ToDate" required/>
+                        <label for="End Date" class="">End Date</label>
+                        <span class="text-danger error"></span>
+                    </div>
+                    </div>
+                </div>
+                <div class="modal-footer d-flex justify-content-center border-0">
+                <button type="submit" class="btn btn-primary" >Submit</button>
+                <button type="button" class="btn btn-outline-primary closeDateRangeModal" >Cancel</button>
+                </div>
+                </form>
+            </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    @Html.Partial("_ValidationScriptsPartial")
+}
+
+<script src="~/js/Customer.js" asp-append-version="true"></script>
+

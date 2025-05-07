@@ -1,0 +1,74 @@
+@model PizzaShop.DataAccess.ViewModels.AddEditSectionViewModel;
+<partial name="_ValidationScriptsPartial" />
+
+<!-- Add Table Modal -->
+<div class="modal fade" id="addSectionModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">
+                    Add Section
+                </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-1">
+                <form class="p-3" id="AddSectionForm">
+                    <div class="form-floating mb-3 p-0">
+                        <input type="text" class="form-control" placeholder="Name*"
+                            asp-for="@Model.Name" name="Name" />
+                        <label for="Name">Name*</label>
+                        <span class="text-danger" asp-validation-for="@Model.Name"></span>
+                    </div>
+
+                    <div class="form-floating p-0">
+                        <textarea class="form-control" placeholder="Description"
+                            asp-for="@Model.Description" name="Description"></textarea>
+                        <label for="Description">Description</label>
+                        <span class="text-danger" asp-validation-for="@Model.Description"></span>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-end border-0">
+                        <button type="submit" class="btn btn-primary">
+                            Save
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $("#AddSectionForm").submit(function(event){
+        event.preventDefault();
+        var form = $("#AddSectionForm")[0];
+        var formData = new FormData(form);
+        
+        $.ajax({
+            url: '/TableAndSection/AddSection',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                if(response.isValid == false)
+                    return;
+                if (response.isExist) {
+                    toastr.error(response.message);
+                }
+                else{
+                    toastr.success("New section added successfully");
+                    $("#addSectionModal").modal('hide');
+                    $("#section-list").html(response);
+                }
+            },
+            error: function (error) {
+                toastr.error(error.message)
+            }
+        })
+    })
+</script>

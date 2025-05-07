@@ -1,0 +1,388 @@
+@model PizzaShop.DataAccess.ViewModels.ItemTabViewModel;
+@inject IHttpContextAccessor Accessor;
+@using Newtonsoft.Json;
+@using PizzaShop.ViewModels;
+<partial name="_ValidationScriptsPartial" />
+@{
+    var PageSize = Model.PageSize;
+    var PageIndex = Model.PageIndex;
+    var TotalPage = Model.TotalPage;
+    var SearchString = Model.SearchString;
+    var TotalRecord = Model.TotalRecord;
+    var permission =
+    JsonConvert.DeserializeObject<List<ManageRolePermissioinViewModel>>(Accessor.HttpContext.Session.GetString("permission"));
+}
+
+<!-- Item header -->
+
+<section class="table-responsive">
+    <table class="table user-table mb-0 menu-table">
+        <thead>
+            <tr>
+                <th>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="selectAllItems" />
+                    </div>
+                </th>
+                <th scope="col">Name</th>
+                <th scope="col">ItemType</th>
+                <th scope="col">Rate</th>
+                <th scope="col">Quantity</th>
+                <th scope="col">Available</th>
+                <th scope="col"
+                    class="d-@(permission[2].Canaddedit == false && permission[2].Candelete == false ? "none" : "")">
+                    Action</th>
+            </tr>
+        </thead>
+        <tbody class="table-group-devider" id="ItemsList">
+            @if (Model.ListItems == null)
+            {
+                <tr>
+                    <td colspan="7" class="text-center">No Items Found</td>
+                </tr>
+            }
+            else
+            {
+                @for (var i = 0; i < Model.ListItems.Count; i++)
+                {
+                    <tr>
+                        <td>
+                            <input type="checkbox" value="@Model.ListItems[i].Id" class="itemCheckbox form-check-input" />
+                        </td>
+                        <td class="d-flex align-items-center">
+                            <span class="me-2">
+                                <img src="~/images/@(Model.ListItems[i].Itemimage != null ? @Model.ListItems[i].Itemimage : "dining-menu.png")"
+                                    alt="dining-menu" class="dining-menu-icon rounded-circle" />
+                            </span>
+                            <span>@Model.ListItems[i].Name</span>
+                        </td>
+                        <td>
+                            <img src="/images/icons/@(Model.ListItems[i].Itemtype == "Veg" ? "veg" : "non-veg")-icon.svg"
+                                alt="ItemType-icon" />
+                        </td>
+                        <td>@Model.ListItems[i].Rate</td>
+                        <td>@Model.ListItems[i].Quantity</td>
+                        <td>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input " type="checkbox" role="switch" id="flexSwitchCheckDefault"
+                                    checked="@Model.ListItems[i].Isavailable" disabled />
+                            </div>
+                        </td>
+                        <td class="d-@(permission[2].Canaddedit == false && permission[2].Candelete == false ? "none" : "")">
+                            <button type="button"
+                                class="btn p-0 border-0 editItemBtn  d-@(permission[2].Canaddedit == false ? "none" : "")"
+                                value="@Model.ListItems[i].Id">
+                                <i class="fa-solid fa-pen me-2"></i>
+                            </button>
+                            <button type="button"
+                                class="btn p-0 border-0 deleteItemId  d-@(permission[2].Candelete == false ? "none" : "")"
+                                value="@Model.ListItems[i].Id">
+                                <i class="fa-regular fa-trash-can"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</section>
+
+<div class="d-flex justify-content-center justify-content-sm-end align-items-center mt-2">
+    <p class="mb-0 d-none d-md-block ">Items Per page</p>
+    <select class="mx-2 cursor-pointer" aria-label="Default select example" id="pageSize">
+        <option value="5" selected="@(PageSize == 5 ? true : false)">5</option>
+        <option value="10" selected="@(PageSize == 10 ? true : false)">10</option>
+        <option value="15" selected="@(PageSize == 15 ? true : false)">15</option>
+    </select>
+
+    <span class="mb-0 ms-2 me-2 d-none d-md-block" id="showing">Showing @(Math.Min(((PageIndex - 1) * PageSize) + 1,
+                TotalRecord)) -
+        @(Math.Min(PageIndex * PageSize, TotalRecord)) of @TotalRecord</span>
+    @if (PageIndex > 1)
+    {
+        <span class="btn btn-outline-secondary me-1 px-3 py-0" name="PageIndex" id="Previous">
+            <i class="fa-solid fa-less-than fa-sm"></i>
+        </span>
+    }
+    else
+    {
+        <button class="btn btn-outline-secondary me-1 px-3 py-0" name="PageIndex" disabled>
+            <i class="fa-solid fa-less-than fa-sm"></i>
+        </button>
+    }
+
+    @if (PageIndex < TotalPage)
+    {
+        <a class="btn btn-outline-secondary px-3 py-0" name="PageIndex" id="Next">
+            <i class="fa-solid fa-greater-than fa-sm"></i>
+        </a>
+    }
+    else
+    {
+        <button class="btn btn-outline-secondary px-3 py-0" name="PageIndex" disabled>
+            <i class="fa-solid fa-greater-than fa-sm"></i>
+        </button>
+    }
+</div>
+
+@* @Html.Partial("_AddMenuItemModal", Model.AddEditItem) *@
+<div id="addItemContainer"></div>
+<div id="editItemContainer">
+
+</div>
+
+@* Delete Item Model *@
+<div class="modal fade" id="deleteItemModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">
+                    Delete Confirmation
+                </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center p-1">
+                <img src="~/images/toppng.com-warning-icon-2400x2400.png" alt="alert-icon" id="alert-icon" />
+                <p class="fw-bold mb-0">
+                    Are you sure you want to delete this Item?
+                </p>
+            </div>
+            <div class="modal-footer d-flex justify-content-center border-0">
+                <button type="button" id="deleteItemBtn" class="btn btn-primary">Yes</button>
+                <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">
+                    No
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Delete Multiple Item Model *@
+<div class="modal fade" id="deleteMultiItemModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">
+                    Delete Confirmation
+                </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center p-1">
+                <img src="~/images/toppng.com-warning-icon-2400x2400.png" alt="alert-icon" id="alert-icon" />
+                <p class="fw-bold mb-0">
+                    Are you sure you want to delete this Items
+                </p>
+            </div>
+            <div class="modal-footer d-flex justify-content-center border-0">
+                <button type="button" id="MultipleDeleteItemBtn" class="btn btn-primary">Yes</button>
+                <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">
+                    No
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var pageIndex = @Model.PageIndex;
+
+    var ajaxRequest;
+    function GetFilteredItems() {
+        var SearchString = $("#searchString").val();
+        var pageSize = $("#pageSize").val();
+
+        if (ajaxRequest && ajaxRequest.readyState !== 4) {
+            ajaxRequest.abort();
+        }
+
+        ajaxRequest = $.ajax({
+            url: "/Menu/GetItemsByCategoryId",
+            type: "GET",
+            data: {
+                id: categoryId,
+                pageIndex: pageIndex,
+                pageSize: pageSize,
+                searchString: SearchString
+            },
+            success: function (data) {
+                $("#menuItems").html(data);
+            }
+        })
+    }
+
+    $('#pageSize').change(function () {
+        var pageSize = @Model.PageSize
+        var pageIndex = 1
+        GetFilteredItems();
+    })
+
+    $('#searchString').keyup(function () {
+        clearTimeout(debounceTimer);
+        pageIndex = 1
+        pageSize = @Model.PageSize
+            deleteItemIds = [];
+        debounceTimer = setTimeout(() => {
+            GetFilteredItems();
+        }, 400)
+    })
+
+    $("#Previous").click(function () {
+        pageIndex -= 1;
+        deleteItemIds = [];
+        GetFilteredItems()
+    })
+
+    $('#Next').click(function () {
+        @* $("#PreviousBtn").attr('disabled', false) *@
+            pageIndex += 1;
+        deleteItemIds = [];
+        GetFilteredItems()
+    })
+
+    $('.editItemBtn').click(function () {
+        var itemId = $(this).val();
+        var cId = categoryId;
+        var pageSize = @Model.PageSize;
+        $.ajax({
+            url: "/Menu/EditMenuItem",
+            type: "GET",
+            data: {
+                itemId: itemId
+            },
+            success: function (data) {  
+                $("#editItemContainer").html(data);
+                $("#EditItemModel").modal('show');
+                categoryId = cId;
+            },
+            error: function (xhr, status, error) {
+                if (status == "error") {
+                    toastr.error("Not Authorised");
+                }
+            }
+        })
+    })
+
+    var deleteItemId;
+    $('.deleteItemId').click(function () {
+        deleteItemId = $(this).val();
+        $('#deleteItemModal').modal('show');
+    })
+
+    $('#deleteItemBtn').click(function () {
+        var cId = categoryId;
+        var itemCount = @Model.PageSize*@Model.PageIndex - @Model.TotalRecord;
+        if (itemCount == (@Model.PageSize - 1)) {
+            if (pageIndex > 1) {
+                pageIndex -= 1;
+            } else {
+                pageIndex = 1;
+            }
+        }
+        $.ajax({
+            url: "/Menu/DeleteMenuItem",
+            type: 'POST',
+            data: {
+                id: deleteItemId
+            },
+            success: function (response) {
+                if (response == null)
+                    window.location.href = "/Authentication/Login"
+                if (response.isSuccess) {
+
+                    GetFilteredItems();
+                    toastr.success(response.message, {
+                        closeButton: true,
+                        progressBar: true,
+                        timeOut: 2000,
+                        positionClass: "toast-top-right"
+                    });
+
+                } else {
+                    toastr.error(response.message, {
+                        closeButton: true,
+                        progressBar: true,
+                        timeOut: 2000,
+                        positionClass: "toast-top-right"
+                    });
+                }
+                $("#deleteItemModal").modal('hide');
+            }
+        })
+
+    })
+
+    var deleteItemIds = [];
+    $("#ItemsList").on('change', '.itemCheckbox', function () {
+        const itemId = $(this).val();
+
+        if ($(this).is(':checked') && !deleteItemIds.includes(itemId)) {
+            deleteItemIds.push(itemId);
+        } else {
+            deleteItemIds = deleteItemIds.filter(id => id !== itemId);
+            $('#selectAllItems').prop('checked', false);
+        }
+
+        if ($('.itemCheckbox:checked').length === $('.itemCheckbox').length) {
+            $('#selectAllItems').prop('checked', true);
+        }
+    });
+
+    $('#selectAllItems').change(function () {
+        const isChecked = $(this).is(':checked');
+        $('.itemCheckbox').each(function () {
+            $(this).prop('checked', isChecked);
+
+            const itemId = $(this).val();
+            if (isChecked && !deleteItemIds.includes(itemId)) {
+                deleteItemIds.push(itemId);
+            } else if (!isChecked) {
+                deleteItemIds = [];
+            }
+        });
+
+    });
+
+    $('#MultipleDeleteItem').click(function () {
+        if (deleteItemIds.length == 0) {
+            toastr.warning("Please select at least one item")
+        } else {
+            $('#deleteMultiItemModal').modal('show');
+        }
+
+
+    })
+
+    $('#MultipleDeleteItemBtn').click(function () {
+
+        $.ajax({
+            url: "/Menu/DeleteMultipleMenuItem",
+            type: 'POST',
+            data: {
+                ItemIds: deleteItemIds
+            },
+            success: function (response) {
+                if (response == null)
+                    window.location.href = "/Authentication/Login"
+                if (response.isSuccess) {
+                    GetFilteredItems();
+                    $('#deleteMultiItemModal').modal('hide');
+                    toastr.success(response.message, {
+                        closeButton: true,
+                        progressBar: true,
+                        timeOut: 2000,
+                        positionClass: "toast-top-right"
+                    });
+
+                } else {
+                    toastr.error(response.message, {
+                        closeButton: true,
+                        progressBar: true,
+                        timeOut: 2000,
+                        positionClass: "toast-top-right"
+                    });
+                }
+                $("#deleteItemModal").modal('hide');
+            }
+        })
+    })
+</script>

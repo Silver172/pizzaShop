@@ -1,0 +1,61 @@
+@{
+    ViewData["Title"] = "Index";
+}
+@model PizzaShop.DataAccess.ViewModels.MenuViewModel;
+<partial name="_ValidationScriptsPartial" />
+
+<section>
+    <div class="row">
+        <h2 class="text-primary col-2 textBlue">Menu</h2>
+    </div>
+    <section class="p-md-3">
+        <nav class="bg-white p-2">
+            <div class="nav nav-underline" id="nav-tab" role="tablist">
+                <button class="nav-link active tab-link pe-1" id="nav-item-tab" data-bs-toggle="tab"
+                    data-bs-target="#nav-item" type="button" role="tab" aria-controls="nav-item" aria-selected="true">
+                    <span class="mx-2"><i class="fa-solid fa-list"></i></span>Items
+                </button>
+                <button class="nav-link tab-link pe-2" id="nav-modifier-tab" data-bs-toggle="tab"
+                    data-bs-target="#nav-modifier" type="button" role="tab" aria-controls="nav-modifier"
+                    aria-selected="false">
+                    <!-- <span class="mx-2"><i class="fa-solid fa-list"></i></span> -->
+                    <img src="~/images/icons/check-grid.svg" alt="Modifier-icon" />
+                    Modifiers
+                </button>
+            </div>
+        </nav>
+
+        <!-- Items and Modifiers -->
+        <div class="tab-content" id="nav-tabContent">
+            <!-- Item Tab -->
+            <div class="tab-pane fade show active mt-2" id="nav-item" role="tabpanel" aria-labelledby="nav-item-tab">
+                @Html.Partial("_Items", Model.ItemsTab)
+            </div>
+
+            <!-- Modifier Tab -->
+            <div class="tab-pane fade mt-2" id="nav-modifier" role="tabpanel" aria-labelledby="nav-modifier-tab">
+                @Html.Partial("_Modifiers",Model.ModifierTab)
+            </div>
+        </div>  
+
+    </section>
+</section>
+
+<script>
+
+    function navigateToLogin(){
+        window.location.reload();
+        @* window.location.href = "/Authentication/Login"; *@
+    }
+    $(function () {
+        var successMessage = '@Html.Raw(TempData["SuccessAddCategory"])';
+        if (successMessage.trim() !== '') {
+            toastr.success(successMessage, {
+                closeButton: true,
+                progressBar: true,
+                timeOut: 2000,
+                positionClass: "toast-top-right"
+            });
+        }
+    });
+</script>

@@ -1,0 +1,112 @@
+@model PizzaShop.DataAccess.ViewModels.OrderAppKOTContentViewModel
+@* Order Item Detail *@
+
+<div class="modal fade" id="foodItemModal" tabindex="-1" aria-labelledby="exampleModalLabel" >
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h2 class="modal-title fs-5" id="exampleModalLabel">
+                    Order ID: @Model.OrderId
+                </h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center p-1">
+                @* <form > *@
+                <section class="table-responsive">
+                    <table class="table table-hover user-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Quantity</th>
+                            </tr>
+                        </thead>
+                        <hr>
+                        <tbody class="">
+
+                            @if (@Model.OrderItems.Count() == 0)
+                                {
+                                    <tr>
+                                        <td colspan="7" class="text-center text-secondary">No Orders Found</td>
+                                    </tr>
+                                }
+                                @foreach (var c in @Model.OrderItems)
+                                {
+                            <tr>
+                                <td>
+                                    <div class="row">
+                                        <div class="col-12 d-flex flex-column justify-content-start">
+                                            <span class="text-start"><input type="checkbox" class="order-item-checkbox" data-id='@c.Id'> @c.Name</span>
+                                            <span>
+                                                <ul>
+                                                    @* <li class="text-start">Cheese</li> *@
+                                                    @foreach(var m in c.Modifiers)
+                                                    {
+
+                                                    <li class="text-start">@m.Name</li>
+                                                    }
+                                                </ul>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-left">
+                                    <div class="row">
+                                        <div class="col-12 d-flex justify-content-end">
+                                            <div class="quantity">
+                                                <button class="minus" aria-label="Decrease">&minus;</button>
+                                                <input type="number" class="input-box" value="1" min="1" max="@c.Quantity">
+                                                <button class="plus" aria-label="Increase">&plus;</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </section>
+
+                <div class="modal-footer d-flex justify-content-center border-0">
+                    <button type="submit" id="markStatusBtn" class="btn btn-primary"></button>
+                    <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                </div>
+                @* </form> *@
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $("#markStatusBtn").click(function (e) {
+        e.preventDefault();
+        var orderItems = [];
+        $(".order-item-checkbox:checked").each(function () {
+            var itemId = $(this).data("id");
+            var quantity = $(this).closest("tr").find(".input-box").val();
+            orderItems.push({ Id: itemId, Quantity: quantity });
+        });
+
+        if (orderItems.length > 0) {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("MarkOrderItemStatus", "KOTOrderApp")',
+                data: { orderItems: JSON.stringify(orderItems) , filterBy: filterBy },
+                success: function (response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        $("#foodItemModal").modal("hide");
+                        GetFilteredKot();
+                    } else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function (error) {
+                    alert(error.message);
+                }
+            });
+        } else {
+            toastr.warning("Please select at least one item.");
+        }
+    });
+</script>
