@@ -29,9 +29,7 @@ else
 }
 
 <div id="addSectionContainer"></div>
-<div id="editSectionContainer">
-
-</div>
+<div id="editSectionContainer"></div>
 
 <!-- Delete Section Modal -->
 <div class="modal fade" id="deleteSectionModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -54,64 +52,3 @@ else
         </div>
     </div>
 </div>
-
-
-<script>
-    var sectionId = @Model.SectionList?.First().Id;
-
-    $(".section-div").click(function(){
-        sectionId = $(this).data('id')
-        $(".section-div").removeClass('activeTabColor');
-        $(this).addClass("activeTabColor");
-        selectedIds = [];
-        $("#searchTables").val("");
-        GetFilteredTables();
-    })
-
-    $(".editSection").click(function(){
-        var id = $(this).data('id');
-
-         $.ajax({
-            url: '/TableAndSection/EditSection',
-            type: 'GET',
-            data: {id: id},
-            success: function (response) {
-                $("#editSectionContainer").html(response);
-                $("#editSectionModal").modal('show');
-            },
-            error: function (error) {
-                toastr.error("Please try again");
-            }
-        })
-    })
-
-    var deleteSectionId;
-    $(".deleteSection").click(function(){
-        deleteSectionId = $(this).data('id');
-    })
-
-    $("#confirmDeleteSectionBtn").click(function(){
-        $.ajax({
-            url: '/TableAndSection/DeleteSection',
-            type: 'POST',
-            data: {id: deleteSectionId},
-            success: function (response) {
-               if (response.isExist) {
-                    toastr.error(response.message);
-                    $("#deleteSectionModal").modal('hide');
-                }
-                else{
-                    toastr.success("Section deleted successfully");
-                    $("#deleteSectionModal").modal('hide');
-                    $("#section-list").html(response);
-                    sectionId = @Model.SectionList?.First().Id;
-                    GetFilteredTables();    
-                }
-            },
-            error: function (error) {
-                toastr.error("Please try again");
-            }
-        })
-    })
-    
-</script>

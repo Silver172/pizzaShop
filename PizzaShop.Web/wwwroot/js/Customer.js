@@ -39,17 +39,17 @@ function customerPageSize(PageSize){
         GetFilteredCustomers();
 }
 
-$("#PreviousCustomers").click(function () {
+$(document).on('click', '#PreviousCustomers', function () {
     CustomerPageIndex -= 1;
     GetFilteredCustomers()
 })
 
-$('#NextCustomers').click(function () {
+$(document).on('click', '#NextCustomers', function () {
     CustomerPageIndex += 1;
     GetFilteredCustomers()
 })
 
-$(".customerRow").click(function () {
+$(document).on('click', '.customerRow', function () {
     var id = $(this).data('id');
 
 
@@ -69,18 +69,17 @@ $(".customerRow").click(function () {
 
 })
 
-
-$("#FromDate").change(function () {
+$(document).on('change', '#FromDate', function () {
     FD = $(this).val();
     document.getElementById("ToDate").setAttribute("min", FD);
 })
 
-$("#ToDate").change(function () {
+$(document).on('change', '#ToDate', function () {
     TD = $(this).val();
     document.getElementById("FromDate").setAttribute("max", TD);
 })
 
-$("#timeDropDown").change(function(){
+$(document).on('change', '#timeDropDown', function () {
     var time = $(this).val(); 
     if(time == "Select Date Range")
     {
@@ -93,7 +92,7 @@ $("#timeDropDown").change(function(){
     }
 })
 
-$(".closeDateRangeModal").click(function(){
+$(document).on('click', '.closeDateRangeModal', function () {
     $("#DateRangeModal").modal('hide');
     $(".text-danger").text('')
 })
@@ -162,8 +161,7 @@ $("#DateRangeForm").submit(function(){
     
 })
 
-
-$("#ExportToExcel").click(function () {
+$(document).on('click', '#ExportToExcel', function () {
     var SearchString = $("#searchCustomer").val();
     var pageSize = $("#customerPageSize").val();
     var status = $("#statusDropDown").val();

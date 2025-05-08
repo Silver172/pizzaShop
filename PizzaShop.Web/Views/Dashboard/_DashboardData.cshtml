@@ -122,9 +122,38 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
 </script>
 <script>
-setGraphSize(@Html.Raw(Json.Serialize(Model?.Revenue?.Values)),
-            @Html.Raw(Json.Serialize(Model?.Revenue?.Labels))
-            @Html.Raw(Json.Serialize(Model?.CustomerGrowth?.Values))
-            @Html.Raw(Json.Serialize(Model?.CustomerGrowth?.Labels))
-        )
+$(document).ready(function () {
+    var yValues = @Html.Raw(Json.Serialize(Model?.Revenue?.Values))
+    var xValues = @Html.Raw(Json.Serialize(Model?.Revenue?.Labels))
+           
+    const myChart = new Chart("revenueChart", {
+        type: "line",
+        data: {
+            labels: xValues,
+            datasets: [{
+                label: "Revenue",
+                fill: true,
+                backgroundColor: "rgba(0, 96, 152,0.1)",
+                borderColor: "rgba(0, 96, 152,0.7)",
+                data: yValues
+            }]
+        },
+    });
+ 
+    var ycValues = @Html.Raw(Json.Serialize(Model?.CustomerGrowth?.Values))
+    var xcValues = @Html.Raw(Json.Serialize(Model?.CustomerGrowth?.Labels))
+    const customerGrowthChart = new Chart("customerGrowthChart", {
+        type: "line",
+        responsive: true,
+        data: {
+            labels: xcValues,
+            datasets: [{
+                label: "Customer Growth",
+                backgroundColor: "rgba(0, 96, 152,0.1)",
+                borderColor: "rgba(0, 96, 152,0.7)",
+                data: ycValues
+            }]
+        },
+    });
+    })
 </script>

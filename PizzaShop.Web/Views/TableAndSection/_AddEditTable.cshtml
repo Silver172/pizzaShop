@@ -61,36 +61,3 @@
         </div>
     </div>
 </div>
-
-
-<script>
-    $("#addEditNewTableForm").submit(function(event){
-        event.preventDefault();
-        var form = $("#addEditNewTableForm")[0];
-        var formData = new FormData(form);
-        $.ajax({
-            url: '/TableAndSection/AddTable',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function (response) {
-                if(response.isValid == false)
-                    return;
-                if(response.isExist)
-                {
-                    toastr.error(response.message);
-                }
-                if(response.isSuccess)
-                {
-                    toastr.success(response.message);
-                    $("#addEditTableModal").modal('hide');
-                    GetFilteredTables();
-                }
-            },
-            error: function (error) {
-                toastr.error(error.message)
-            }
-        })
-    })
-</script>

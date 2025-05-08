@@ -12,7 +12,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-1">
-                <form id="EditSectionForm" class="p-3">
+                <form id="EditSectionForm" class="p-3" onsubmit="EditSectionForm(@Model.Id)">
                     <input type="hidden" name="Id" asp-for="@Model.Id">
                     <div class="form-floating mb-3 p-0">
                         <input type="text" class="form-control" placeholder="Name*"
@@ -41,43 +41,3 @@
         </div>
     </div>
 </div>
-
-
-<script>
-    $("#EditSectionForm").submit(function(event){
-        event.preventDefault();
-        var form = $("#EditSectionForm")[0];
-        var formData = new FormData(form);
-        
-        $.ajax({
-            url: '/TableAndSection/EditSection',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function (response) {
-                if(response.isValid == false)
-                    return;
-                if (response.isExist) {
-                    toastr.error(response.message);
-                }
-                else{
-                    toastr.success("Section updated successfully");
-                    $("#editSectionModal").modal('hide');
-                    $("#section-list").html(response);
-
-                    $(".section-div").removeClass('activeTabColor');
-                    $(".section-div").map(function(){
-                        if($(this).data('id') == @Model.Id)
-                        {
-                            $(this).addClass("activeTabColor");
-                        }
-                    })
-                }
-            },
-            error: function (error) {
-                toastr.error(error.message)
-            }
-        })
-    })
-</script>

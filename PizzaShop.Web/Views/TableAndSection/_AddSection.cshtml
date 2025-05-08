@@ -41,34 +41,3 @@
     </div>
 </div>
 
-
-<script>
-    $("#AddSectionForm").submit(function(event){
-        event.preventDefault();
-        var form = $("#AddSectionForm")[0];
-        var formData = new FormData(form);
-        
-        $.ajax({
-            url: '/TableAndSection/AddSection',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function (response) {
-                if(response.isValid == false)
-                    return;
-                if (response.isExist) {
-                    toastr.error(response.message);
-                }
-                else{
-                    toastr.success("New section added successfully");
-                    $("#addSectionModal").modal('hide');
-                    $("#section-list").html(response);
-                }
-            },
-            error: function (error) {
-                toastr.error(error.message)
-            }
-        })
-    })
-</script>
